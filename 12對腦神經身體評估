@@ -1,0 +1,1215 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>十二對腦神經評估練習</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Noto+Sans+TC:wght@400;500;700&family=Noto+Serif+TC:wght@600;700&display=swap" rel="stylesheet">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+<style>
+:root{
+  /* Layout: sticky score bar + one column of cranial-nerve cards (student); filter row + tabs + tables (teacher) */
+  --bg:#f4f5f7; --surface:#ffffff; --ink:#1d2229; --ink-2:#56606c; --line:#dde1e6;
+  --accent:#8a1c2b; --accent-soft:#f6e8ea; --ok:#1f7a5c; --ok-soft:#e3f2ec; --warn:#a15c00; --warn-soft:#fbf0de; --bad:#b3261e; --bad-soft:#fbe7e6;
+  --font-display:"Noto Serif TC","Songti TC",serif; --font-body:"Noto Sans TC","PingFang TC","Microsoft JhengHei",system-ui,sans-serif;
+  color-scheme:light;
+}
+@media (prefers-color-scheme: dark){
+  :root:not([data-theme="light"]){
+    --bg:#15181c; --surface:#1e2228; --ink:#e8eaed; --ink-2:#a3abb5; --line:#323840;
+    --accent:#e07884; --accent-soft:#3a2328; --ok:#5cc49d; --ok-soft:#1d3a30; --warn:#e3a54a; --warn-soft:#3b2f1c; --bad:#f08a82; --bad-soft:#3d2321;
+    color-scheme:dark;
+  }
+}
+:root[data-theme="dark"]{
+  --bg:#15181c; --surface:#1e2228; --ink:#e8eaed; --ink-2:#a3abb5; --line:#323840;
+  --accent:#e07884; --accent-soft:#3a2328; --ok:#5cc49d; --ok-soft:#1d3a30; --warn:#e3a54a; --warn-soft:#3b2f1c; --bad:#f08a82; --bad-soft:#3d2321;
+  color-scheme:dark;
+}
+*{box-sizing:border-box}
+html,body{margin:0}
+body{background:var(--bg);color:var(--ink);font-family:var(--font-body);font-size:15px;line-height:1.6}
+h1,h2,h3{font-family:var(--font-display);text-wrap:balance;margin:0;line-height:1.3}
+button,input,select,textarea{font:inherit;color:inherit}
+button{cursor:pointer}
+:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
+.num{font-variant-numeric:tabular-nums}
+.muted{color:var(--ink-2)}
+.wrap{max-width:980px;margin:0 auto;padding:0 16px}
+header.top{background:var(--surface);border-bottom:1px solid var(--line)}
+header.top .wrap{display:flex;align-items:center;gap:16px;min-height:60px;flex-wrap:wrap}
+.brand{display:flex;flex-direction:column;line-height:1.25;padding:8px 0}
+.brand small{color:var(--ink-2);font-size:12px}
+.brand b{font-family:var(--font-display);font-size:17px}
+nav.views{display:flex;gap:4px}
+nav.views a{padding:6px 12px;border-radius:6px;text-decoration:none;color:var(--ink-2);font-weight:500}
+nav.views a[aria-current="page"]{background:var(--accent-soft);color:var(--accent)}
+main{padding:20px 0 60px}
+.card{background:var(--surface);border:1px solid var(--line);border-radius:10px;padding:18px}
+.stack{display:flex;flex-direction:column;gap:14px}
+.row{display:flex;gap:12px;flex-wrap:wrap;align-items:center}
+.btn{border:1px solid var(--line);background:var(--surface);padding:8px 14px;border-radius:8px;font-weight:500}
+.btn:hover{border-color:var(--ink-2)}
+.btn.primary{background:var(--accent);border-color:var(--accent);color:#fff}
+:root[data-theme="dark"] .btn.primary{color:#1a0d10}
+@media (prefers-color-scheme: dark){:root:not([data-theme="light"]) .btn.primary{color:#1a0d10}}
+.btn.small{padding:4px 10px;font-size:13px}
+.btn.danger{color:var(--bad);border-color:var(--bad)}
+.btn[disabled]{opacity:.5;cursor:not-allowed}
+label.f{display:flex;flex-direction:column;gap:4px;font-size:13px;color:var(--ink-2);font-weight:500}
+input.t,select.t,textarea.t{border:1px solid var(--line);background:var(--bg);border-radius:8px;padding:8px 10px;min-width:0}
+textarea.t{width:100%;min-height:72px;resize:vertical}
+.pill{display:inline-flex;align-items:center;gap:4px;font-size:12px;padding:2px 8px;border-radius:999px;font-weight:500;white-space:nowrap}
+.pill.ok{background:var(--ok-soft);color:var(--ok)}
+.pill.bad{background:var(--bad-soft);color:var(--bad)}
+.pill.warn{background:var(--warn-soft);color:var(--warn)}
+.pill.acc{background:var(--accent-soft);color:var(--accent)}
+.note{font-size:13px;border-left:3px solid var(--warn);background:var(--warn-soft);padding:8px 12px;border-radius:0 6px 6px 0}
+.notice{font-size:14px;padding:10px 14px;border-radius:8px;background:var(--accent-soft);color:var(--ink)}
+.err{color:var(--bad);font-size:13px;min-height:1em}
+.hidden{display:none !important}
+
+/* ---------- student: entry ---------- */
+.entry{max-width:520px;margin:24px auto}
+.entry h1{font-size:24px}
+.entry .grid{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+@media (max-width:480px){.entry .grid{grid-template-columns:1fr}}
+.tools{font-size:13px;color:var(--ink-2)}
+
+/* ---------- student: assessment ---------- */
+.scorebar{position:sticky;top:0;z-index:5;background:var(--surface);border-bottom:1px solid var(--line);box-shadow:0 2px 6px rgba(0,0,0,.04)}
+.scorebar .wrap{display:flex;gap:16px;align-items:center;padding-top:8px;padding-bottom:8px;flex-wrap:wrap}
+.scorebar .big{font-size:26px;font-weight:700;font-family:var(--font-display)}
+.scorebar .big small{font-size:14px;color:var(--ink-2);font-weight:400}
+.meter{flex:1;min-width:140px}
+.meter .track{height:6px;border-radius:3px;background:var(--line);overflow:hidden}
+.meter .fill{height:100%;background:var(--accent);border-radius:3px;transition:width .2s}
+.meter .lbl{font-size:12px;color:var(--ink-2);display:flex;justify-content:space-between}
+.chips{display:flex;gap:6px;overflow-x:auto;padding:4px 0 8px;scrollbar-width:thin}
+.chips a{flex:none;font-size:12px;padding:3px 9px;border-radius:999px;border:1px solid var(--line);text-decoration:none;color:var(--ink-2);background:var(--surface)}
+.chips a.done{border-color:var(--ok);color:var(--ok)}
+.sec{scroll-margin-top:120px}
+.sec-head{display:flex;gap:10px;align-items:baseline;flex-wrap:wrap;margin-bottom:6px}
+.sec-head .cn{font-size:12px;font-weight:700;color:var(--accent);letter-spacing:.04em}
+.sec-head h2{font-size:19px}
+.sec-head .sub{margin-left:auto;font-size:14px}
+.subhead{font-size:13px;font-weight:700;color:var(--ink-2);margin:12px 0 2px;padding-top:8px;border-top:1px dashed var(--line)}
+.item{display:grid;grid-template-columns:1fr auto;gap:10px;align-items:center;padding:9px 0;border-bottom:1px solid var(--line)}
+.item:last-of-type{border-bottom:0}
+.item .txt{font-size:15px}
+.item .pts{font-size:12px;color:var(--ink-2);margin-left:6px}
+.seg{display:flex;border:1px solid var(--line);border-radius:8px;overflow:hidden;flex:none}
+.seg button{border:0;background:var(--surface);min-width:38px;height:36px;padding:0 8px;font-weight:500;color:var(--ink-2);border-left:1px solid var(--line)}
+.seg button:first-child{border-left:0}
+.seg button[aria-pressed="true"].zero{background:var(--bad-soft);color:var(--bad)}
+.seg button[aria-pressed="true"].part{background:var(--warn-soft);color:var(--warn)}
+.seg button[aria-pressed="true"].full{background:var(--ok-soft);color:var(--ok)}
+@media (max-width:560px){.item{grid-template-columns:1fr}.seg{justify-self:start}}
+.findings{margin-top:10px;padding:10px 12px;background:var(--bg);border-radius:8px;display:flex;flex-wrap:wrap;gap:10px 16px;align-items:flex-end}
+.findings .lab{font-size:13px;font-weight:700;color:var(--ink-2);width:100%}
+.radio{display:flex;gap:4px}
+.radio button{border:1px solid var(--line);background:var(--surface);padding:5px 12px;border-radius:6px;font-size:13px}
+.radio button[aria-pressed="true"][data-v="正常"]{background:var(--ok-soft);color:var(--ok);border-color:var(--ok)}
+.radio button[aria-pressed="true"][data-v="異常"]{background:var(--bad-soft);color:var(--bad);border-color:var(--bad)}
+input.sm{width:78px}
+.interp{font-size:13px;font-weight:500}
+.ded label{display:flex;gap:10px;align-items:flex-start;padding:6px 0;border-bottom:1px solid var(--line);cursor:pointer}
+.ded label:last-child{border-bottom:0}
+.ded input{margin-top:5px;accent-color:var(--bad)}
+.ded .minus{margin-left:auto;color:var(--bad);font-weight:700}
+
+/* ---------- result ---------- */
+.result-top{display:flex;gap:20px;align-items:center;flex-wrap:wrap}
+.score-ring{font-family:var(--font-display);font-size:54px;font-weight:700;line-height:1}
+.score-ring small{font-size:18px;color:var(--ink-2)}
+.bars{display:flex;flex-direction:column;gap:6px}
+.bar-row{display:grid;grid-template-columns:220px 1fr 64px;gap:10px;align-items:center;font-size:13px}
+.bar-row .tr{height:12px;background:var(--line);border-radius:3px;overflow:hidden;position:relative}
+.bar-row .fl{height:100%;background:var(--accent);border-radius:0 4px 4px 0}
+@media (max-width:480px){.bar-row{grid-template-columns:96px 1fr 52px}}
+.code-box{font-family:ui-monospace,Menlo,Consolas,monospace;font-size:12px;word-break:break-all;background:var(--bg);border:1px solid var(--line);border-radius:8px;padding:10px;max-height:120px;overflow:auto;user-select:all}
+ul.miss{margin:0;padding-left:18px}
+ul.miss li{margin:3px 0}
+
+/* ---------- teacher ---------- */
+.tiles{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:12px}
+.tile{background:var(--surface);border:1px solid var(--line);border-radius:10px;padding:12px 14px}
+.tile .k{font-size:12px;color:var(--ink-2)}
+.tile .v{font-size:26px;font-weight:700;font-variant-numeric:tabular-nums}
+.tile .v small{font-size:13px;font-weight:400;color:var(--ink-2)}
+.filters{display:flex;gap:10px;flex-wrap:wrap;align-items:flex-end}
+.tabs{display:flex;gap:2px;border-bottom:1px solid var(--line);overflow-x:auto}
+.tabs button{border:0;background:none;padding:10px 14px;color:var(--ink-2);font-weight:500;border-bottom:2px solid transparent;white-space:nowrap}
+.tabs button[aria-selected="true"]{color:var(--accent);border-bottom-color:var(--accent)}
+.tbl-wrap{overflow-x:auto;border:1px solid var(--line);border-radius:10px;background:var(--surface)}
+table{border-collapse:collapse;width:100%;font-size:14px}
+th,td{padding:8px 10px;text-align:left;border-bottom:1px solid var(--line);white-space:nowrap}
+th{font-size:12px;color:var(--ink-2);font-weight:700;background:var(--bg);position:sticky;top:0}
+td.r,th.r{text-align:right;font-variant-numeric:tabular-nums}
+tbody tr:hover{background:var(--bg)}
+tbody tr.click{cursor:pointer}
+tr.sub td{background:var(--bg);font-size:13px}
+.empty{padding:28px;text-align:center;color:var(--ink-2)}
+.hist{display:flex;align-items:flex-end;gap:6px;height:150px;padding:8px 0 0;border-bottom:1px solid var(--line)}
+.hist .col{flex:1;display:flex;flex-direction:column;align-items:center;justify-content:flex-end;height:100%;gap:4px;position:relative}
+.hist .col .b{width:100%;max-width:56px;background:var(--accent);border-radius:4px 4px 0 0;min-height:0}
+.hist .col .c{font-size:12px;font-variant-numeric:tabular-nums}
+.hist-x{display:flex;gap:6px}
+.hist-x span{flex:1;text-align:center;font-size:12px;color:var(--ink-2)}
+.tip{position:fixed;pointer-events:none;background:var(--ink);color:var(--surface);font-size:12px;padding:6px 9px;border-radius:6px;z-index:50;max-width:280px}
+.overlay{position:fixed;inset:0;background:rgba(10,12,15,.45);z-index:40;display:flex;align-items:flex-start;justify-content:center;padding:24px 12px;overflow:auto}
+.overlay .card{max-width:760px;width:100%}
+.detail-item{display:grid;grid-template-columns:1fr 64px;gap:8px;font-size:13px;padding:4px 0;border-bottom:1px solid var(--line)}
+.detail-item.lost{color:var(--bad)}
+/* ---------- home ---------- */
+:root{--sens:#0f7c80;--sens-soft:#dff2f1;--motor:#b26a00;--motor-soft:#fbefdc;--mix:#8a1c2b;--mix-soft:#f6e8ea;--hero:#fbf3f1}
+@media (prefers-color-scheme: dark){:root:not([data-theme="light"]){--sens:#5cc6c4;--sens-soft:#163536;--motor:#e6a94f;--motor-soft:#3a2d18;--mix:#e07884;--mix-soft:#3a2328;--hero:#221b1d}}
+:root[data-theme="dark"]{--sens:#5cc6c4;--sens-soft:#163536;--motor:#e6a94f;--motor-soft:#3a2d18;--mix:#e07884;--mix-soft:#3a2328;--hero:#221b1d}
+.home{gap:28px}
+.hero{display:grid;grid-template-columns:1.15fr 1fr;gap:24px;align-items:center;background:var(--hero);border:1px solid var(--line);border-radius:18px;padding:28px;position:relative;overflow:hidden}
+.hero::before,.hero::after{content:"";position:absolute;border-radius:50%;pointer-events:none}
+.hero::before{width:260px;height:260px;right:-70px;top:-90px;background:var(--sens-soft);opacity:.8}
+.hero::after{width:180px;height:180px;left:-60px;bottom:-80px;background:var(--motor-soft);opacity:.9}
+.hero > *{position:relative;z-index:1}
+.eyebrow{display:inline-block;font-size:12px;font-weight:700;letter-spacing:.06em;color:var(--accent);background:var(--surface);border:1px solid var(--line);padding:3px 10px;border-radius:999px}
+.hero h1{font-size:clamp(28px,4.4vw,40px);margin:12px 0 8px;line-height:1.2}
+.hero h1 .hl{color:var(--accent);background:linear-gradient(transparent 62%, var(--motor-soft) 62%)}
+.hero p{margin:0 0 14px;color:var(--ink-2);max-width:34em}
+.steps{list-style:none;margin:0 0 14px;padding:0;display:flex;flex-direction:column;gap:8px}
+.steps li{display:flex;gap:10px;align-items:center;font-weight:500}
+.steps b{flex:none;width:26px;height:26px;border-radius:50%;display:grid;place-items:center;background:var(--accent);color:#fff;font-size:13px}
+:root[data-theme="dark"] .steps b{color:#1a0d10}
+@media (prefers-color-scheme: dark){:root:not([data-theme="light"]) .steps b{color:#1a0d10}}
+.facts{display:flex;flex-wrap:wrap;gap:8px}
+.facts span{background:var(--surface);border:1px solid var(--line);border-radius:10px;padding:6px 12px;font-size:13px;color:var(--ink-2)}
+.facts b{font-size:18px;color:var(--ink);margin-right:2px}
+.start-card{box-shadow:0 10px 30px rgba(60,20,30,.08)}
+.start-card h2{font-size:20px}
+.start-card .grid{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+.big-btn{padding:10px 20px;font-size:16px}
+@media (max-width:760px){.hero{grid-template-columns:1fr;padding:20px}}
+@media (max-width:420px){.start-card .grid{grid-template-columns:1fr}}
+.home-h{font-size:20px}
+.legend-cn{display:flex;align-items:center;gap:6px;font-size:13px;color:var(--ink-2)}
+.legend-cn .dot{width:10px;height:10px;border-radius:50%;display:inline-block;margin-left:6px}
+.dot.sens{background:var(--sens)}.dot.motor{background:var(--motor)}.dot.mix{background:var(--mix)}
+.nerves{display:grid;grid-template-columns:repeat(6,1fr);gap:10px}
+@media (max-width:820px){.nerves{grid-template-columns:repeat(4,1fr)}}
+@media (max-width:480px){.nerves{grid-template-columns:repeat(3,1fr)}}
+.nerve{border:1px solid var(--line);border-radius:12px;padding:10px 10px 12px;background:var(--surface);text-align:left;display:flex;flex-direction:column;gap:2px;position:relative;transition:transform .15s, box-shadow .15s}
+.nerve:hover,.nerve[aria-expanded="true"]{transform:translateY(-3px);box-shadow:0 6px 16px rgba(0,0,0,.08)}
+.nerve .rn{font-family:var(--font-display);font-size:22px;font-weight:700;line-height:1}
+.nerve .nm{font-weight:700;font-size:14px}
+.nerve .fn{font-size:12px;color:var(--ink-2);line-height:1.4}
+.nerve::before{content:"";position:absolute;left:0;top:10px;bottom:10px;width:4px;border-radius:0 4px 4px 0}
+.nerve.sens{background:linear-gradient(var(--sens-soft),var(--surface) 70%)}.nerve.sens .rn{color:var(--sens)}.nerve.sens::before{background:var(--sens)}
+.nerve.motor{background:linear-gradient(var(--motor-soft),var(--surface) 70%)}.nerve.motor .rn{color:var(--motor)}.nerve.motor::before{background:var(--motor)}
+.nerve.mix{background:linear-gradient(var(--mix-soft),var(--surface) 70%)}.nerve.mix .rn{color:var(--mix)}.nerve.mix::before{background:var(--mix)}
+.mnemonic{display:flex;gap:12px;align-items:center;flex-wrap:wrap;background:var(--surface);border:1px dashed var(--accent);border-radius:12px;padding:10px 14px;font-family:var(--font-display);font-size:16px}
+.mn-lbl{font-family:var(--font-body);font-size:12px;font-weight:700;color:#fff;background:var(--accent);padding:2px 10px;border-radius:999px}
+:root[data-theme="dark"] .mn-lbl{color:#1a0d10}
+@media (prefers-color-scheme: dark){:root:not([data-theme="light"]) .mn-lbl{color:#1a0d10}}
+.home-2col{display:grid;grid-template-columns:1fr 1fr;gap:14px}
+@media (max-width:700px){.home-2col{grid-template-columns:1fr}}
+.home-2col h3{font-size:16px}
+.tipcard{border-top:4px solid var(--motor)}
+.tip-text{font-size:16px;margin:10px 0 4px;min-height:3.2em}
+.tools-card{border-top:4px solid var(--sens)}
+.toolchips{list-style:none;padding:0;margin:10px 0 0;display:flex;flex-wrap:wrap;gap:6px}
+.toolchips li{font-size:13px;padding:4px 10px;border-radius:999px;background:var(--sens-soft);color:var(--ink)}
+.sync{margin-left:auto;display:inline-flex;align-items:center;gap:6px;border:1px solid var(--line);background:var(--surface);border-radius:999px;padding:4px 12px;font-size:13px;color:var(--ink-2);font-weight:500}
+.sync .sd{width:8px;height:8px;border-radius:50%;background:var(--ink-2)}
+.sync.ok{color:var(--ok)} .sync.ok .sd{background:var(--ok)}
+.sync.pending{color:var(--warn);border-color:var(--warn)} .sync.pending .sd{background:var(--warn)}
+.sync.busy .sd{background:var(--accent);animation:pulse 1s infinite}
+@keyframes pulse{50%{opacity:.3}}
+@media (prefers-reduced-motion: reduce){*{transition:none !important;scroll-behavior:auto !important}}
+</style>
+</head>
+<body>
+<header class="top">
+  <div class="wrap">
+    <div class="brand"><small>國立成功大學醫學院護理學系・健康檢查與評估（含實習）</small><b>十二對腦神經系統評估（115）</b></div>
+    <button type="button" id="syncChip" class="sync hidden" title="雲端同步狀態"><span class="sd"></span><span id="syncTxt">同步</span></button>
+    <nav class="views" id="nav">
+      <a href="#student" id="navStudent">學生練習</a>
+      <a href="#grade" id="navGrade" class="hidden">教師評分</a>
+      <a href="#teacher" id="navTeacher" class="hidden">教師管理</a>
+    </nav>
+  </div>
+</header>
+
+<div id="scorebar" class="scorebar hidden">
+  <div class="wrap">
+    <div class="big num" id="sbScore">0 <small>/ 100</small></div>
+    <div class="meter">
+      <div class="lbl"><span id="sbWho"></span><span class="num" id="sbProg">0 / 0 項已評</span></div>
+      <div class="track"><div class="fill" id="sbFill" style="width:0"></div></div>
+    </div>
+    <div class="num muted" id="sbTimer" title="本次練習用時">00:00</div>
+  </div>
+  <div class="wrap"><div class="chips" id="sbChips"></div></div>
+</div>
+
+<main>
+  <div class="wrap">
+    <!-- ===== STUDENT: entry ===== -->
+    <section id="vEntry" class="home stack">
+      <div class="hero">
+        <div class="hero-text">
+          <span class="eyebrow">健康檢查與評估（含實習）・技術練習</span>
+          <h1>十二對腦神經<br><span class="hl">一對一對練到熟</span></h1>
+          <p>照著系上評分表逐項練習，邊做邊說、即時計分。送出後馬上知道哪裡要加強，紀錄也會交給老師。</p>
+          <ol class="steps">
+            <li><b>1</b><span>輸入年級、學號</span></li>
+            <li><b>2</b><span>邊做邊口述，逐項評分</span></li>
+            <li><b>3</b><span>送出，看回饋與弱項</span></li>
+          </ol>
+          <div class="facts"><span><b class="num">61</b> 個評分項目</span><span><b class="num">100</b> 分滿分</span><span><b class="num">9</b> 項倒扣提醒</span></div>
+        </div>
+        <div class="card stack start-card">
+          <h2>開始練習</h2>
+          <form id="entryForm" class="stack" novalidate>
+            <div class="grid">
+              <label class="f" for="inGrade">年級
+                <select class="t" id="inGrade">
+                  <option>一年級</option><option selected>二年級</option><option>三年級</option><option>四年級</option><option>五年級</option>
+                </select>
+              </label>
+              <label class="f" for="inSid">學號
+                <input class="t" id="inSid" autocomplete="off" placeholder="例：B46131234" maxlength="12">
+              </label>
+              <label class="f" for="inName">姓名
+                <input class="t" id="inName" autocomplete="name" placeholder="例：王小明" maxlength="20">
+              </label>
+              <label class="f" for="inMode">評分方式
+                <select class="t" id="inMode"><option>自我評量</option><option>同儕互評</option><option>期中考</option></select>
+              </label>
+              <label class="f hidden" for="inPeer" id="peerWrap"><span id="peerLbl">評分同學學號</span>
+                <input class="t" id="inPeer" autocomplete="off" maxlength="20" placeholder="選填">
+              </label>
+            </div>
+            <div class="err" id="entryErr"></div>
+            <div class="row">
+              <button class="btn primary big-btn" type="submit">開始評估 →</button>
+              <button class="btn" type="button" id="btnHistory">查看我的紀錄</button>
+            </div>
+          </form>
+          <div id="connNote" class="notice hidden"></div>
+        </div>
+      </div>
+
+      <div class="stack" style="gap:10px">
+        <div class="row" style="justify-content:space-between;align-items:baseline">
+          <h2 class="home-h">先暖身：十二對腦神經</h2>
+          <div class="legend-cn"><span class="dot sens"></span>感覺<span class="dot motor"></span>運動<span class="dot mix"></span>混合</div>
+        </div>
+        <div class="nerves" id="nerveGrid"></div>
+        <div class="mnemonic" aria-label="記憶口訣">
+          <span class="mn-lbl">口訣</span>
+          <span>一嗅二視三動眼，四滑五叉六外旋，七面八聽九舌咽，十迷十一副舌下全</span>
+        </div>
+      </div>
+
+      <div class="home-2col">
+        <div class="card tipcard">
+          <div class="row" style="justify-content:space-between"><h3>考前小提醒</h3><button class="btn small" id="btnTip" type="button">換一則</button></div>
+          <p id="tipText" class="tip-text"></p>
+          <span class="muted" id="tipSrc" style="font-size:12px"></span>
+        </div>
+        <div class="card tools-card">
+          <h3>檢查工具清單</h3>
+          <ul class="toolchips">
+            <li>兩種熟悉、無刺激性氣味物品</li><li>筆燈</li><li>瞳孔尺</li><li>秒針手錶</li><li>遮眼棒</li><li>指示棒</li><li>棉籤</li><li>音叉（512 Hz 為佳）</li>
+          </ul>
+        </div>
+      </div>
+    </section>
+
+    <!-- ===== STUDENT: assessment ===== -->
+    <section id="vAssess" class="stack hidden">
+      <div id="draftNote" class="notice hidden"></div>
+      <div class="note">每項檢查須<b>一邊做一邊口述</b>所測項目與結果，未能說出者該項不得分；未比較兩側不得分；測試每條腦神經前須說出其名稱。</div>
+      <div id="sections" class="stack"></div>
+      <div class="card stack sec" id="sec-ded">
+        <div class="sec-head"><span class="cn">倒扣</span><h2>注意事項（未做到者倒扣）</h2><span class="sub num" id="dedTotal">−0</span></div>
+        <div class="ded" id="dedList"></div>
+      </div>
+      <div class="card stack">
+        <label class="f" for="inNote">練習心得／備註（選填）
+          <textarea class="t" id="inNote" maxlength="500" placeholder="例如：Rinne test 計時不熟、角膜反射手法需再練習"></textarea>
+        </label>
+        <div id="confirmBox" class="note hidden"></div>
+        <div class="row">
+          <button class="btn primary" id="btnSubmit">送出評估</button>
+          <button class="btn" id="btnAllFull" title="將所有未評項目設為滿分">未評項目全部給滿分</button>
+          <button class="btn" id="btnReset">清除重來</button>
+          <button class="btn" id="btnBack">返回</button>
+        </div>
+      </div>
+    </section>
+
+    <!-- ===== STUDENT: result ===== -->
+    <section id="vResult" class="stack hidden"></section>
+
+    <!-- ===== STUDENT: history ===== -->
+    <section id="vHistory" class="stack hidden"></section>
+
+    <!-- ===== TEACHER GRADING ===== -->
+    <section id="vGrade" class="entry stack hidden">
+      <div id="gNotice" class="notice hidden"></div>
+      <div class="card stack" id="gCard">
+        <h1>教師評分</h1>
+        <p class="muted" style="margin:0">輸入受評學生資料後，依系上評分表逐項評分（滿分 100）。評分結果直接存入教師管理，學生無法修改。</p>
+        <form id="gradeForm" class="stack" novalidate>
+          <div class="grid">
+            <label class="f" for="gSid">學生學號 *<input class="t" id="gSid" autocomplete="off" maxlength="12" placeholder="例：B46131234"></label>
+            <label class="f" for="gName">學生姓名 *<input class="t" id="gName" autocomplete="off" maxlength="20" placeholder="例：王小明"></label>
+            <label class="f" for="gGrade">年級
+              <select class="t" id="gGrade"><option>一年級</option><option selected>二年級</option><option>三年級</option><option>四年級</option><option>五年級</option></select>
+            </label>
+            <label class="f" for="gCat">評量類別
+              <select class="t" id="gCat"><option>期中考</option><option>期末考</option><option>平時評量</option></select>
+            </label>
+            <label class="f" for="gTeacher">評分教師<input class="t" id="gTeacher" maxlength="20" placeholder="教師姓名"></label>
+          </div>
+          <div class="err" id="gErr"></div>
+          <div class="row"><button class="btn primary" type="submit">開始評分</button></div>
+        </form>
+      </div>
+      <div class="card tools"><b>檢查工具：</b>兩種熟悉、無刺激性氣味物品、筆燈、瞳孔尺、秒針手錶、遮眼棒、指示棒、棉籤、音叉（512 Hz 為佳）</div>
+    </section>
+
+    <!-- ===== TEACHER ===== -->
+    <section id="vTeacher" class="stack hidden">
+      <div class="row" style="justify-content:space-between">
+        <h1 style="font-size:22px">教師管理</h1>
+        <div class="row">
+          <button class="btn" id="btnXlsx">匯出 Excel</button>
+          <button class="btn" id="btnCsv">匯出 CSV</button>
+          <button class="btn" id="btnCopy">複製表格</button>
+        </div>
+      </div>
+      <div class="err" id="expMsg"></div>
+      <div id="tNotice" class="notice hidden"></div>
+      <div class="card filters">
+        <label class="f" for="fGrade">年級
+          <select class="t" id="fGrade"><option value="">全部</option><option>一年級</option><option>二年級</option><option>三年級</option><option>四年級</option><option>五年級</option></select>
+        </label>
+        <label class="f" for="fSid">學號／姓名搜尋<input class="t" id="fSid" placeholder="部分學號或姓名" style="width:150px"></label>
+        <label class="f" for="fFrom">起日<input class="t" type="date" id="fFrom"></label>
+        <label class="f" for="fTo">迄日<input class="t" type="date" id="fTo"></label>
+        <label class="f" for="fMode">評分方式／類別
+          <select class="t" id="fMode"><option value="">全部</option><option>自我評量</option><option>同儕互評</option><option>期中考</option><option>期末考</option><option>平時評量</option></select>
+        </label>
+        <label class="f" for="fSrc">來源
+          <select class="t" id="fSrc"><option value="">全部</option><option value="teacher">教師評分</option><option value="student">學生練習</option></select>
+        </label>
+        <label class="f" for="fPass">達標分數<input class="t num" type="number" id="fPass" value="80" min="0" max="100" style="width:80px"></label>
+      </div>
+      <div class="tiles" id="tiles"></div>
+      <div class="tabs" role="tablist" id="tabs">
+        <button role="tab" data-tab="students" aria-selected="true">學生總覽</button>
+        <button role="tab" data-tab="records" aria-selected="false">每次紀錄</button>
+        <button role="tab" data-tab="items" aria-selected="false">項目分析</button>
+        <button role="tab" data-tab="import" aria-selected="false">匯入成績碼</button>
+      </div>
+      <div id="tabBody"></div>
+    </section>
+  </div>
+</main>
+<div id="overlay" class="overlay hidden" role="dialog" aria-modal="true"></div>
+<div id="tip" class="tip hidden"></div>
+
+<script>
+/* ================= 評分標準（依 115 學年度評分表） ================= */
+const FORM_VER = "115";
+const SECTIONS = [
+  {id:"prep", cn:"準備", name:"檢查前準備", short:"準備", items:[
+    {t:"(1)洗手（以乾洗手執行）(2)自我介紹 (3)核對病人 (4)解釋目的 (5)保護隱私：圍床簾", p:1}
+  ]},
+  {id:"cn1", cn:"CN I", name:"嗅神經", short:"嗅", note:"兩側鼻孔應分開測試；避免使用具刺激性的氣味物品", items:[
+    {t:"先確定兩個鼻孔是否通暢", p:1},
+    {t:"指示病人閉眼，壓住一個鼻孔，另側鼻孔深呼吸", p:1},
+    {t:"以一種熟悉、無刺激性氣味測試一側鼻孔，請個案辨識氣味", p:1},
+    {t:"另一側以不同氣味做同樣測試", p:1},
+    {t:"比較兩側，說出正常與否", p:1}
+  ]},
+  {id:"cn2", cn:"CN II", name:"視神經：視野測試", short:"視", note:"正常：受測者與施測者在相近位置看到目標，各方向視野大致對稱", items:[
+    {t:"離病人約 2 步（60 公分）", p:1},
+    {t:"指示病人單眼遮住", p:1},
+    {t:"手勿用力壓眼，受測者注視檢查者相對眼並保持同高；施測者遮住與受測者相對側的眼", p:1},
+    {t:"用筆或手由八個不同方向慢慢向視野中央移動，手（筆）至兩人等距見到餘光時，受測者與施測者須說出", p:4},
+    {t:"顳側應由受測者的略後方開始移動", p:1},
+    {t:"兩側都要進行", p:1},
+    {t:"比較受測者與施測者的視野差異", p:1},
+    {t:"說出結果正常與否", p:1}
+  ]},
+  {id:"cn346", cn:"CN III・IV・VI", name:"動眼・滑車・外旋神經", short:"動眼", note:"評估 CN III、IV、VI（第 3、4、6 腦神經）功能", find:"pupil", items:[
+    {s:"檢視雙眼瞳孔", t:"拿瞳孔尺測量兩眼，說出檢查內容：大小、形狀、對稱性", p:3},
+    {s:"檢視雙眼瞳孔", t:"說出結果：正常為 3–5 mm、圓而規則、兩眼等大", p:3},
+    {s:"檢視雙眼瞳孔", t:"兩側均測量對光反應：光線調暗，雙眼注視遠方，逐眼測試直接對光反射", p:2},
+    {s:"檢視雙眼瞳孔", t:"說出兩眼直接對光反射是否正常（正常為受光眼瞳孔迅速收縮）", p:1},
+    {s:"眼外肌運動", t:"指示個案頭部保持不動，以雙眼追隨檢查者手指，依六個基本注視方向（H 型）評估眼球運動", p:6},
+    {s:"眼外肌運動", t:"比較雙眼眼球運動是否平順、協調且對稱，有無眼球震顫", p:2}
+  ]},
+  {id:"cn5", cn:"CN V", name:"三叉神經", short:"三叉", items:[
+    {s:"角膜反射", n:"先確認沒戴隱形眼鏡；若觸及睫毛不給分", t:"指示病人將視線移至檢查者對側", p:1},
+    {s:"角膜反射", t:"先確認未戴隱形眼鏡；以細棉絮由眼外側輕觸角膜，觀察眨眼反射", p:1},
+    {s:"角膜反射", t:"兩側均需測試", p:1},
+    {s:"角膜反射", t:"結果：正常是兩眼皆眨眼、躲避", p:1},
+    {s:"輕觸覺", n:"需先以棉籤測試手皮膚；每一部分測試不完整不給分；沒有比較兩側的觸感不給分", t:"測試時請個案閉眼", p:1},
+    {s:"輕觸覺", t:"以棉花尖輕觸額、頰、頷部位，請個案說出感覺及位置", p:3},
+    {s:"輕觸覺", t:"比較兩側，並說出輕觸覺是否正常", p:2},
+    {s:"痛覺測試", t:"測試時個案仍閉眼", p:1},
+    {s:"痛覺測試", t:"以棉棒鈍端與木棒較尖端分別輕觸皮膚，隨機測試額、頰、頷部，請個案辨識尖／鈍感覺及位置", p:2},
+    {s:"痛覺測試", t:"比較兩側，並說出痛覺是否正常", p:2},
+    {s:"咬顳肌測試", t:"指示病人咬緊牙關後放鬆", p:1},
+    {s:"咬顳肌測試", t:"雙手觸診顳肌及咬肌，感受肌肉收縮力量", p:1},
+    {s:"咬顳肌測試", t:"比較兩側是否收縮一致", p:1},
+    {s:"咬顳肌測試", t:"請說出是否正常", p:1}
+  ]},
+  {id:"cn7", cn:"CN VII", name:"顏面神經", short:"顏面", items:[
+    {s:"味覺", t:"以甜、酸或鹹味溶液棉棒輕塗舌前 2/3 之一側，請個案辨識味道；必要時比較兩側", p:1},
+    {s:"表情測試", t:"觀察並說出臉部表情變化及對稱：正常是無抽搐、異常表情、無嘴角下垂與眼瞼下垂", p:2},
+    {s:"表情測試", t:"指示病人雙眉上舉(1)、皺眉(1)、緊閉雙眼使檢查者無法用手撐開(1)", p:3},
+    {s:"表情測試", t:"露齒而笑(1)，吹氣使兩頰鼓脹後施測者輕壓臉頰(1)", p:2},
+    {s:"表情測試", t:"比較兩側對稱性", p:1},
+    {s:"表情測試", t:"上述檢查後說出臉部有無肌肉無力", p:2}
+  ]},
+  {id:"cn8", cn:"CN VIII", name:"聽神經", short:"聽", find:"hearing", items:[
+    {s:"Weber test", n:"若聲音不一樣大，說出可能病變：傳導性障礙－患側較大聲；神經性聽障－健側較大聲", t:"震動音叉握住方式之正確性", p:1},
+    {s:"Weber test", t:"說出測試名稱 Weber test，及說出聲音以骨傳導震動方式傳遞", p:2},
+    {s:"Weber test", t:"振動音叉放在個案額頭或頭頂（距兩耳等距）", p:1},
+    {s:"Weber test", t:"比較兩側聲音大小並說出結果：正常為兩耳等響、無偏側（no lateralization）", p:2},
+    {s:"Rinne test", n:"正常：AC > BC（常約 2:1）；若 AC < BC，考慮傳導性聽力損失", t:"說出測試名稱 Rinne test，須說出測量聲音以骨傳導震動及空氣方式傳遞", p:2},
+    {s:"Rinne test", t:"振動音叉置乳突骨，計算其秒數及說出", p:2},
+    {s:"Rinne test", t:"聲音消失時放在耳道 1–2 cm，計算耳邊的秒數及說出", p:2},
+    {s:"Rinne test", t:"比較兩側", p:1},
+    {s:"Rinne test", t:"說出結果：正常為 Rinne (+)，即 AC > BC", p:1}
+  ]},
+  {id:"cn910", cn:"CN IX・X", name:"舌咽・迷走神經", short:"舌咽迷走", items:[
+    {s:"味覺", t:"舌咽神經（CN IX）：以苦味溶液棉棒輕塗舌後 1/3，請個案辨識味道", p:1},
+    {s:"運動功能", t:"指示病人發聲（啊）", p:1},
+    {s:"運動功能", t:"用筆燈觀察軟顎與懸雍垂；請個案發「啊」，正常為軟顎對稱上提、懸雍垂居中", p:2},
+    {s:"運動功能", t:"指示病人張口(1)，以棉枝輪流刺激兩側咽喉後部(1)，並觀察嘔吐反射(1)", p:3}
+  ]},
+  {id:"cn11", cn:"CN XI", name:"脊副神經", short:"脊副", items:[
+    {t:"由背後觀察比較兩側斜方肌有無萎縮、顫動", p:2},
+    {t:"讓患者聳肩（斜方肌）抵抗檢查者雙手下壓之力", p:1},
+    {t:"讓個案向側轉頭對抗檢查者手部阻力，評估胸鎖乳突肌", p:2},
+    {t:"比較兩側肌力與收縮情形", p:2}
+  ]},
+  {id:"cn12", cn:"CN XII", name:"舌下神經", short:"舌下", items:[
+    {t:"指示病人伸出舌頭", p:1},
+    {t:"視診舌頭對稱性、有無萎縮或偏離中線", p:3},
+    {t:"將舌頭快速伸出、收回、左右擺動", p:3},
+    {t:"比較兩側對稱性運動是否正常", p:1}
+  ]}
+];
+const DEDUCTIONS = [
+  {t:"洗手：檢查前", p:1},{t:"洗手：檢查後", p:1},
+  {t:"每換個案檢查時需洗手", p:2},
+  {t:"頭髮不可觸及個案，若過長需紮起並梳整齊", p:2},
+  {t:"注意個案環境的隱密性", p:2},{t:"適當保持個案身體隱私", p:2},
+  {t:"主動與個案互動", p:2},{t:"隨時注意個案之反應", p:2},
+  {t:"指甲不可過長", p:2}
+];
+/* flatten */
+const ITEMS = [];
+SECTIONS.forEach(sec=>{ sec.start = ITEMS.length; let k=0;
+  sec.items.forEach(it=>{ k++; ITEMS.push(Object.assign({sec:sec.id, secObj:sec, k, label:`${sec.short}-${k}`}, it)); });
+  sec.end = ITEMS.length; sec.max = sec.items.reduce((a,b)=>a+b.p,0);
+});
+const N = ITEMS.length;
+const MAX = ITEMS.reduce((a,b)=>a+b.p,0); // 100
+
+/* ================= utilities ================= */
+const $ = s=>document.querySelector(s);
+const esc = s=>String(s??"").replace(/[&<>"']/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));
+const ls = {
+  get(k,d){ try{ const v=localStorage.getItem(k); return v?JSON.parse(v):d; }catch(e){ return d; } },
+  set(k,v){ try{ localStorage.setItem(k,JSON.stringify(v)); }catch(e){} },
+  del(k){ try{ localStorage.removeItem(k); }catch(e){} }
+};
+const fmtDT = ts=>{ if(!ts) return ""; const d=new Date(ts); const p=n=>String(n).padStart(2,"0");
+  return `${d.getFullYear()}/${p(d.getMonth()+1)}/${p(d.getDate())} ${p(d.getHours())}:${p(d.getMinutes())}`; };
+const fmtDur = sec=>{ sec=Math.max(0,Math.round(sec||0)); return `${Math.floor(sec/60)}:${String(sec%60).padStart(2,"0")}`; };
+function fnv(str){ let h=0x811c9dc5; for(let i=0;i<str.length;i++){ h^=str.charCodeAt(i); h=Math.imul(h,0x01000193); } return (h>>>0).toString(16).padStart(8,"0").slice(0,6); }
+const b64e = s=>btoa(unescape(encodeURIComponent(s))).replace(/\+/g,"-").replace(/\//g,"_").replace(/=+$/,"");
+const b64d = s=>{ s=s.replace(/-/g,"+").replace(/_/g,"/"); while(s.length%4) s+="="; return decodeURIComponent(escape(atob(s))); };
+
+/* compute totals from a record (never trust stored totals) */
+function compute(r){
+  const s = (r.s||[]).map((v,i)=> ITEMS[i] ? Math.max(0,Math.min(ITEMS[i].p, Number(v)||0)) : 0);
+  const raw = s.reduce((a,b)=>a+b,0);
+  const ded = (r.d||[]).reduce((a,i)=>a+(DEDUCTIONS[i]?DEDUCTIONS[i].p:0),0);
+  const secs = {}; SECTIONS.forEach(sec=>{ let x=0; for(let i=sec.start;i<sec.end;i++) x+=s[i]||0; secs[sec.id]=x; });
+  return {s, raw, ded, total:Math.max(0,raw-ded), secs, dur: r.te&&r.ts ? (r.te-r.ts)/1000 : 0};
+}
+function encodeCode(r){
+  const payload = JSON.stringify({v:FORM_VER,i:r.id,g:r.g,sid:r.sid,nm:r.nm||"",m:r.m,pe:r.pe||"",ts:r.ts,te:r.te,s:r.s,d:r.d,f:r.f||{},n:r.n||""});
+  const b = b64e(payload); return `CN12.${b}.${fnv(b)}`;
+}
+function decodeCode(code){
+  const m = code.trim().match(/^CN12\.([A-Za-z0-9_-]+)\.([0-9a-f]{6})$/);
+  if(!m) throw new Error("格式不符");
+  if(fnv(m[1])!==m[2]) throw new Error("檢查碼不符（可能複製不完整）");
+  const o = JSON.parse(b64d(m[1]));
+  if(!Array.isArray(o.s) || o.s.length!==N) throw new Error("評分項目數不符");
+  if(!/^[A-Za-z0-9_.-]{4,60}$/.test(o.i||"")) throw new Error("紀錄編號無效");
+  return {id:o.i,g:String(o.g||""),sid:String(o.sid||"").toUpperCase().slice(0,12),nm:String(o.nm||"").slice(0,20),m:String(o.m||""),pe:String(o.pe||"").slice(0,20),
+    ts:Number(o.ts)||0,te:Number(o.te)||0,s:o.s.map(Number),d:(o.d||[]).map(Number).filter(i=>DEDUCTIONS[i]),f:typeof o.f==="object"&&o.f?o.f:{},n:String(o.n||"").slice(0,500),v:o.v};
+}
+
+/* ================= platform capabilities ================= */
+let DB=null, USER=null, UID=null, CAN_EDIT=false, DOWNLOADS=null, CAP_READY=false;
+const capReady = (async()=>{
+  await new Promise(r=>setTimeout(r,0));
+  try{
+    if(window.claude && window.claude.use){
+      const [db,user,dl] = await Promise.all([claude.use("db"),claude.use("user"),claude.use("downloads")]);
+      DB=db; USER=user; DOWNLOADS=dl;
+      if(USER){ try{ UID = await USER.id(); }catch(e){} try{ CAN_EDIT = !!(await USER.canEdit()); }catch(e){} }
+    }
+  }catch(e){}
+  CAP_READY=true; onCaps();
+})();
+
+/* ================= student state ================= */
+let profile = ls.get("cn12.profile",{g:"二年級",sid:"",m:"自我評量",pe:""});
+let cur = null; // {id, ts, s[], d:Set, f:{}, n}
+let timerH = null;
+let lastRecord = null;
+let gradeMode = false;
+let syncQueue = ls.get("cn12.queue",[]);
+(ls.get("cn12.graded.local",[])||[]).forEach(r=>{ if(!syncQueue.some(q=>q.rec.id===r.id)) syncQueue.push({kind:"graded",rec:r}); }); ls.del("cn12.graded.local"); ls.set("cn12.queue",syncQueue);
+function enqueue(kind, rec){ if(!syncQueue.some(q=>q.kind===kind&&q.rec.id===rec.id)) syncQueue.push({kind,rec}); ls.set("cn12.queue",syncQueue); paintSync(); }
+const DKEY = ()=> gradeMode ? "cn12.gdraft" : "cn12.draft";
+
+function newAttempt(){
+  return {id:`${profile.sid}-${Date.now().toString(36)}`, ts:Date.now(), s:Array(N).fill(null), d:new Set(), f:{}, n:""};
+}
+function saveDraft(){ if(!cur) return; const d={...cur,d:[...cur.d],sid:profile.sid,updated:Date.now()}; ls.set(DKEY(),d); scheduleCloudDraft(d); }
+let cdTimer=null, cdBusy=false, cdPending=null;
+const draftKey = ()=> gradeMode ? "gdraft" : "draft";
+function scheduleCloudDraft(d){ cdPending={key:draftKey(),d}; clearTimeout(cdTimer); cdTimer=setTimeout(pushCloudDraft,2500); }
+async function pushCloudDraft(){
+  if(cdBusy || !cdPending || !DB || !UID) return;
+  const job=cdPending; cdPending=null; cdBusy=true;
+  try{ await DB.doc(`subs/${UID}/meta/${job.key}`).set({draft:JSON.stringify(job.d), updated:job.d.updated, sid:job.d.sid}); }catch(e){}
+  cdBusy=false; if(cdPending) cdTimer=setTimeout(pushCloudDraft,2500);
+}
+async function clearCloudDraft(key){ clearTimeout(cdTimer); cdPending=null; await capReady; if(!DB||!UID) return; try{ await DB.doc(`subs/${UID}/meta/${key}`).delete(); }catch(e){} }
+async function checkCloudDraft(){
+  await capReady; if(!DB||!UID||!cur) return;
+  const key=draftKey(), sid=profile.sid, mineTs = (ls.get(DKEY(),null)||{}).updated||0;
+  try{
+    const snap=await DB.doc(`subs/${UID}/meta/${key}`).get(); if(!snap.exists) return;
+    const o=snap.data(); if(o.sid!==sid || !(o.updated>mineTs+1000)) return;
+    const d=JSON.parse(o.draft); if(!Array.isArray(d.s)||d.s.length!==N||d.id===cur.id && o.updated<=mineTs) return;
+    if(currentView!=="assess" || profile.sid!==sid) return;
+    const n=$("#draftNote");
+    n.innerHTML=`雲端有你在其他裝置 ${fmtDT(o.updated)} 的未送出進度（已評 ${d.s.filter(v=>v!==null).length} 項）。<button class="btn small primary" id="btnLoadCloud" style="margin-left:8px">載入雲端進度</button>`;
+    n.classList.remove("hidden");
+    $("#btnLoadCloud").addEventListener("click",()=>{ ls.set(DKEY(),d); startAssess(); $("#draftNote").textContent="已載入雲端進度。"; });
+  }catch(e){}
+}
+
+/* ---------- entry ---------- */
+$("#inGrade").value = profile.g; $("#inSid").value = profile.sid; $("#inName").value = profile.nm||""; $("#inMode").value = profile.m; $("#inPeer").value = profile.pe||"";
+const syncPeer=()=>{ const m=$("#inMode").value; $("#peerWrap").classList.toggle("hidden",m==="自我評量"); $("#peerLbl").textContent = m==="期中考"?"評分教師（選填）":"評分同學學號（選填）"; $("#inPeer").maxLength = m==="期中考"?20:12; };
+$("#inMode").addEventListener("change",syncPeer); syncPeer();
+function readProfile(){
+  const sid = $("#inSid").value.trim().toUpperCase();
+  const pe = $("#inMode").value==="期中考" ? $("#inPeer").value.trim().slice(0,20) : $("#inPeer").value.trim().toUpperCase();
+  if(!/^[A-Z0-9]{6,12}$/.test(sid)){ $("#entryErr").textContent="請輸入正確學號（6–12 碼英文字母或數字，例如 B46131234）。"; $("#inSid").focus(); return null; }
+  if(pe && $("#inMode").value==="同儕互評" && !/^[A-Z0-9]{6,12}$/.test(pe)){ $("#entryErr").textContent="同學學號格式不正確。"; return null; }
+  $("#entryErr").textContent="";
+  const nm = $("#inName").value.trim().slice(0,20);
+  if(!nm){ $("#entryErr").textContent="請輸入姓名。"; $("#inName").focus(); return null; }
+  profile = {g:$("#inGrade").value, sid, nm, m:$("#inMode").value, pe:$("#inMode").value!=="自我評量"?pe:""};
+  ls.set("cn12.profile",profile); return profile;
+}
+$("#entryForm").addEventListener("submit",e=>{ e.preventDefault(); if(!readProfile()) return; startAssess(); });
+$("#btnHistory").addEventListener("click",()=>{ if(!readProfile()) return; showHistory(); });
+
+/* ---------- build assessment DOM once ---------- */
+function buildSections(){
+  const host = $("#sections"); let html="";
+  SECTIONS.forEach(sec=>{
+    html += `<div class="card sec" id="sec-${sec.id}"><div class="sec-head"><span class="cn">${esc(sec.cn)}</span><h2>${esc(sec.name)}</h2>
+      <span class="sub num" data-subtotal="${sec.id}">0 / ${sec.max}</span>
+      <button class="btn small" data-fillsec="${sec.id}" title="本段全部給滿分">本段全對</button></div>`;
+    if(sec.note) html += `<div class="note" style="margin-bottom:6px">${esc(sec.note)}</div>`;
+    let lastSub=null;
+    for(let i=sec.start;i<sec.end;i++){
+      const it=ITEMS[i];
+      if(it.s && it.s!==lastSub){ html += `<div class="subhead">${esc(it.s)}</div>`; lastSub=it.s; if(it.n) html+=`<div class="note" style="margin:4px 0">${esc(it.n)}</div>`; }
+      let btns="";
+      if(it.p===1){ btns = `<button data-i="${i}" data-v="0" class="zero" aria-pressed="false" aria-label="未完成">✗</button><button data-i="${i}" data-v="1" class="full" aria-pressed="false" aria-label="完成">✓ 1</button>`; }
+      else { for(let v=0;v<=it.p;v++) btns += `<button data-i="${i}" data-v="${v}" class="${v===0?"zero":v===it.p?"full":"part"}" aria-pressed="false">${v}</button>`; }
+      html += `<div class="item"><div class="txt">${esc(it.t)}<span class="pts">(${it.p} 分)</span></div><div class="seg" role="group" aria-label="${esc(it.label)} 得分">${btns}</div></div>`;
+    }
+    if(sec.id!=="prep"){
+      html += `<div class="findings"><div class="lab">評估發現（記錄個案結果）</div>
+        <div class="radio" data-res="${sec.id}"><button type="button" data-v="正常" aria-pressed="false">正常</button><button type="button" data-v="異常" aria-pressed="false">異常</button></div>`;
+      if(sec.find==="pupil"){
+        html += `<label class="f" for="f_pl">左眼瞳孔 mm<input class="t sm num" id="f_pl" data-f="pupilL" type="number" step="0.5" min="1" max="9"></label>
+                 <label class="f" for="f_pr">右眼瞳孔 mm<input class="t sm num" id="f_pr" data-f="pupilR" type="number" step="0.5" min="1" max="9"></label>
+                 <span class="interp" id="pupilInterp"></span>`;
+      }
+      if(sec.find==="hearing"){
+        html += `<label class="f" for="f_weber">Weber 結果<select class="t" id="f_weber" data-f="weber"><option value=""></option><option>兩耳等響（無偏側）</option><option>偏左側</option><option>偏右側</option></select></label>
+          <label class="f" for="f_lbc">左 BC 秒<input class="t sm num" id="f_lbc" data-f="LBC" type="number" min="0" max="120"></label>
+          <label class="f" for="f_lac">左 AC 秒<input class="t sm num" id="f_lac" data-f="LAC" type="number" min="0" max="120"></label>
+          <label class="f" for="f_rbc">右 BC 秒<input class="t sm num" id="f_rbc" data-f="RBC" type="number" min="0" max="120"></label>
+          <label class="f" for="f_rac">右 AC 秒<input class="t sm num" id="f_rac" data-f="RAC" type="number" min="0" max="120"></label>
+          <span class="interp" id="rinneInterp"></span>`;
+      }
+      html += `<label class="f" for="f_note_${sec.id}" style="flex:1;min-width:200px">說明<input class="t" id="f_note_${sec.id}" data-f="note_${sec.id}" maxlength="120" placeholder="異常時描述所見"></label></div>`;
+    }
+    html += `</div>`;
+  });
+  host.innerHTML = html;
+  $("#dedList").innerHTML = DEDUCTIONS.map((d,i)=>`<label for="ded${i}"><input type="checkbox" id="ded${i}" data-ded="${i}"><span>${esc(d.t)}</span><span class="minus num">−${d.p}</span></label>`).join("");
+  $("#sbChips").innerHTML = SECTIONS.map(s=>`<a href="#student" data-jump="${s.id}">${esc(s.cn==="準備"?"準備":s.cn)}</a>`).join("") + `<a href="#student" data-jump="ded">倒扣</a>`;
+}
+buildSections();
+
+document.addEventListener("click",e=>{
+  const b = e.target.closest("[data-i]");
+  if(b && cur){ const i=+b.dataset.i, v=+b.dataset.v; cur.s[i] = (cur.s[i]===v ? null : v); paintItem(i); refresh(); saveDraft(); return; }
+  const fs = e.target.closest("[data-fillsec]");
+  if(fs && cur){ const sec=SECTIONS.find(s=>s.id===fs.dataset.fillsec); for(let i=sec.start;i<sec.end;i++){ cur.s[i]=ITEMS[i].p; paintItem(i);} refresh(); saveDraft(); return; }
+  const rr = e.target.closest("[data-res] button");
+  if(rr && cur){ const key="res_"+rr.parentElement.dataset.res; cur.f[key] = cur.f[key]===rr.dataset.v ? "" : rr.dataset.v; paintFindings(); saveDraft(); return; }
+  const j = e.target.closest("[data-jump]");
+  if(j){ e.preventDefault(); const el=document.getElementById("sec-"+j.dataset.jump); if(el) el.scrollIntoView({behavior:"smooth",block:"start"}); }
+});
+document.addEventListener("change",e=>{
+  const d=e.target.closest("[data-ded]");
+  if(d && cur){ d.checked ? cur.d.add(+d.dataset.ded) : cur.d.delete(+d.dataset.ded); refresh(); saveDraft(); }
+});
+document.addEventListener("input",e=>{
+  const f=e.target.closest("[data-f]");
+  if(f && cur){ cur.f[f.dataset.f]=f.value; interpret(); saveDraft(); }
+  if(e.target.id==="inNote" && cur){ cur.n=e.target.value; saveDraft(); }
+});
+
+function paintItem(i){
+  document.querySelectorAll(`[data-i="${i}"]`).forEach(b=>b.setAttribute("aria-pressed", String(cur.s[i]===+b.dataset.v)));
+}
+function paintFindings(){
+  document.querySelectorAll("[data-res]").forEach(g=>{ const v=cur.f["res_"+g.dataset.res]||""; g.querySelectorAll("button").forEach(b=>b.setAttribute("aria-pressed",String(b.dataset.v===v))); });
+  document.querySelectorAll("[data-f]").forEach(inp=>{ inp.value = cur.f[inp.dataset.f]??""; });
+  interpret();
+}
+function interpret(){
+  const f=cur?cur.f:{};
+  const pl=parseFloat(f.pupilL), pr=parseFloat(f.pupilR); let pt="";
+  if(!isNaN(pl)&&!isNaN(pr)){ const okR=v=>v>=3&&v<=5; pt = (okR(pl)&&okR(pr)&&pl===pr) ? "✓ 3–5 mm 且兩眼等大" : (pl!==pr? "⚠ 兩眼不等大":"⚠ 超出 3–5 mm"); }
+  const pi=$("#pupilInterp"); if(pi){ pi.textContent=pt; pi.style.color = pt.startsWith("✓")?"var(--ok)":"var(--warn)"; }
+  const r=(bc,ac)=>{ bc=parseFloat(bc); ac=parseFloat(ac); if(isNaN(bc)||isNaN(ac)) return null; return ac>bc?"Rinne(+)":"Rinne(−)"; };
+  const L=r(f.LBC,f.LAC), R=r(f.RBC,f.RAC); const parts=[]; if(L) parts.push("左 "+L); if(R) parts.push("右 "+R);
+  const ri=$("#rinneInterp"); if(ri){ ri.textContent = parts.join("、") + (parts.some(p=>p.includes("−"))?"：AC ≤ BC，考慮傳導性聽力損失":parts.length?"：AC > BC 正常":""); ri.style.color = parts.some(p=>p.includes("−"))?"var(--warn)":"var(--ok)"; }
+}
+function refresh(){
+  const c = compute({s:cur.s.map(v=>v??0), d:[...cur.d]});
+  const done = cur.s.filter(v=>v!==null).length;
+  $("#sbScore").innerHTML = `${c.total} <small>/ ${MAX}</small>`;
+  $("#sbProg").textContent = `${done} / ${N} 項已評`;
+  $("#sbFill").style.width = (done/N*100)+"%";
+  SECTIONS.forEach(sec=>{
+    const el=document.querySelector(`[data-subtotal="${sec.id}"]`); if(el) el.textContent=`${c.secs[sec.id]} / ${sec.max}`;
+    const allDone = cur.s.slice(sec.start,sec.end).every(v=>v!==null);
+    const chip=document.querySelector(`[data-jump="${sec.id}"]`); if(chip) chip.classList.toggle("done",allDone);
+  });
+  $("#dedTotal").textContent = `−${c.ded}`;
+  $("#confirmBox").classList.add("hidden");
+}
+
+function startAssess(){
+  const dr = ls.get(DKEY(),null);
+  if(dr && dr.sid===profile.sid && Array.isArray(dr.s) && dr.s.length===N){
+    cur = {id:dr.id, ts:dr.ts, s:dr.s, d:new Set(dr.d||[]), f:dr.f||{}, n:dr.n||""};
+    $("#draftNote").textContent = `已恢復 ${fmtDT(dr.ts)} 開始、尚未送出的練習進度。`; $("#draftNote").classList.remove("hidden");
+  } else { cur = newAttempt(); $("#draftNote").classList.add("hidden"); }
+  for(let i=0;i<N;i++) paintItem(i);
+  document.querySelectorAll("[data-ded]").forEach(cb=>cb.checked=cur.d.has(+cb.dataset.ded));
+  $("#inNote").value = cur.n; paintFindings();
+  $("#sbWho").textContent = (gradeMode?"教師評分｜":"") + `${profile.g}・${profile.sid} ${profile.nm||""}・${profile.m}${profile.pe?"（評分："+profile.pe+"）":""}`;
+  document.querySelector('label[for="inNote"]').firstChild.textContent = gradeMode ? "教師評語（選填）" : "練習心得／備註（選填）";
+  $("#inNote").placeholder = gradeMode ? "例：角膜反射手法正確；Rinne test 計時需再熟練" : "例如：Rinne test 計時不熟、角膜反射手法需再練習";
+  refresh(); show("assess"); window.scrollTo(0,0);
+  clearInterval(timerH); timerH=setInterval(()=>{ $("#sbTimer").textContent = fmtDur((Date.now()-cur.ts)/1000); },1000);
+  checkCloudDraft();
+}
+$("#btnBack").addEventListener("click",()=>{ clearInterval(timerH); show(gradeMode?"grade":"entry"); });
+$("#btnReset").addEventListener("click",()=>{ ls.del(DKEY()); clearCloudDraft(draftKey()); startAssess(); $("#draftNote").classList.add("hidden"); });
+$("#btnAllFull").addEventListener("click",()=>{ for(let i=0;i<N;i++) if(cur.s[i]===null){ cur.s[i]=ITEMS[i].p; paintItem(i);} refresh(); saveDraft(); });
+$("#btnSubmit").addEventListener("click",()=>{
+  const missing = cur.s.filter(v=>v===null).length;
+  const box=$("#confirmBox");
+  if(missing>0 && box.classList.contains("hidden")){
+    box.innerHTML = `尚有 <b>${missing}</b> 項未評分，送出後以 0 分計算。<button class="btn small primary" id="btnConfirm" style="margin-left:8px">確認送出</button>`;
+    box.classList.remove("hidden"); $("#btnConfirm").addEventListener("click",doSubmit); return;
+  }
+  doSubmit();
+});
+
+async function doSubmit(){
+  clearInterval(timerH);
+  const rec = {id:cur.id, g:profile.g, sid:profile.sid, nm:profile.nm||"", m:profile.m, pe:profile.pe||"", ts:cur.ts, te:Date.now(),
+    s:cur.s.map(v=>v??0), d:[...cur.d].sort((a,b)=>a-b), f:cleanF(cur.f), n:(cur.n||"").slice(0,500), v:FORM_VER};
+  lastRecord = rec;
+  if(gradeMode){
+    rec.by="teacher"; ls.del(DKEY());
+    renderResult(rec,"saving"); show("result"); window.scrollTo(0,0);
+    let st="local"; await capReady;
+    if(DB && CAN_EDIT){ for(let k=0;k<2 && st!=="saved";k++){ try{ await DB.doc("graded/"+rec.id).set(rec); st="saved"; }catch(e){ if(!(e&&e.code==="unavailable")) break; await new Promise(r=>setTimeout(r,900)); } } }
+    if(st!=="saved") enqueue("graded",rec);
+    clearCloudDraft("gdraft");
+    renderResult(rec, st==="saved"?"tsaved":"tlocal"); return;
+  }
+  const hist = ls.get("cn12.history",[]); hist.push(rec); ls.set("cn12.history",hist.slice(-50));
+  ls.del(DKEY());
+  renderResult(rec, "saving"); show("result"); window.scrollTo(0,0);
+  clearCloudDraft("draft");
+  const st = await uploadRecord(rec);
+  if(st!=="saved") enqueue("attempt",rec); else markSynced();
+  renderResult(rec, st==="saved" ? "saved" : "queued");
+}
+function cleanF(f){ const o={}; Object.keys(f||{}).forEach(k=>{ const v=String(f[k]??"").trim(); if(v) o[k]=v.slice(0,120); }); return o; }
+
+async function uploadRecord(rec){
+  await capReady;
+  if(!DB || !UID) return "offline";
+  try{
+    const ref = DB.doc("subs/"+UID);
+    const snap = await ref.get();
+    const arr = snap.exists && Array.isArray(snap.data().attempts) ? snap.data().attempts.slice() : [];
+    if(!arr.some(a=>a.id===rec.id)) arr.push(rec);
+    await ref.set({attempts:arr.slice(-80), sid:rec.sid, g:rec.g, updated:Date.now()});
+    return "saved";
+  }catch(e){
+    if(e && e.code==="unavailable"){ try{ await new Promise(r=>setTimeout(r,800+Math.random()*800)); const ref=DB.doc("subs/"+UID); const snap=await ref.get(); const arr=snap.exists&&Array.isArray(snap.data().attempts)?snap.data().attempts.slice():[]; if(!arr.some(a=>a.id===rec.id)) arr.push(rec); await ref.set({attempts:arr.slice(-80),sid:rec.sid,g:rec.g,updated:Date.now()}); return "saved"; }catch(e2){} }
+    return "offline";
+  }
+}
+
+/* ---------- result ---------- */
+function renderResult(rec, st){
+  const c = compute(rec); const code = encodeCode(rec);
+  const missed = []; c.s.forEach((v,i)=>{ if(v<ITEMS[i].p) missed.push({i,v}); });
+  const status = st==="saving" ? `<span class="pill acc">上傳中…</span>`
+    : st==="saved" ? `<span class="pill ok">✓ 已送至教師端</span>`
+    : st==="tsaved" ? `<span class="pill ok">✓ 教師評分已儲存</span>`
+    : st==="tlocal" ? `<span class="pill warn">暫存待同步：連線後自動上傳雲端</span>`
+    : st==="queued" ? `<span class="pill warn">暫存待同步：連線後自動上傳；也可先複製成績碼給老師</span>`
+    : `<span class="pill warn">未連線：請將下方成績碼交給老師</span>`;
+  $("#vResult").innerHTML = `
+  <div class="card stack">
+    <div class="result-top">
+      <div class="score-ring num">${c.total}<small> / ${MAX}</small></div>
+      <div class="stack" style="gap:4px">
+        <div class="row" style="gap:8px">${status}</div>
+        <div class="muted">${rec.by==="teacher"?"教師評分｜":""}${esc(rec.g)}・${esc(rec.sid)} ${esc(rec.nm||"")}・${esc(rec.m)}${rec.pe?"（評分："+esc(rec.pe)+"）":""}</div>
+        <div class="muted num">項目得分 ${c.raw}　倒扣 −${c.ded}　用時 ${fmtDur(c.dur)}　${fmtDT(rec.te)}</div>
+      </div>
+    </div>
+    <h3 style="font-size:16px">各腦神經得分率</h3>
+    <div class="bars">${SECTIONS.map(sec=>{ const pct=c.secs[sec.id]/sec.max*100; return `<div class="bar-row" data-tipr="${esc(sec.name)}：${c.secs[sec.id]} / ${sec.max} 分"><span>${esc(sec.cn==="準備"?"準備":sec.cn)} ${esc(sec.short==="準備"?"":sec.name.split("：")[0])}</span><div class="tr"><div class="fl" style="width:${pct}%"></div></div><span class="num r" style="text-align:right">${c.secs[sec.id]}/${sec.max}</span></div>`; }).join("")}</div>
+  </div>
+  <div class="card stack">
+    <h3 style="font-size:16px">需加強的項目（${missed.length}）</h3>
+    ${missed.length? `<ul class="miss">${missed.map(m=>`<li><b>${esc(ITEMS[m.i].secObj.cn)}</b> ${esc(ITEMS[m.i].t)} <span class="muted num">（${m.v}/${ITEMS[m.i].p}）</span></li>`).join("")}</ul>` : `<p class="muted" style="margin:0">全部項目皆得滿分。</p>`}
+    ${rec.d.length? `<div><b>倒扣：</b>${rec.d.map(i=>esc(DEDUCTIONS[i].t)+"（−"+DEDUCTIONS[i].p+"）").join("、")}</div>`:""}
+  </div>
+  ${rec.n?`<div class="card"><b>${rec.by==="teacher"?"教師評語":"備註"}：</b>${esc(rec.n)}</div>`:""}
+  <div class="card stack ${rec.by==="teacher"?"hidden":""}">
+    <h3 style="font-size:16px">成績碼</h3>
+    <p class="muted" style="margin:0;font-size:13px">若狀態顯示未連線，請複製此成績碼，依老師指定方式（例如 Moodle 作業或 LINE）繳交；老師貼到教師管理頁即可匯入。</p>
+    <div class="code-box" id="codeBox">${esc(code)}</div>
+    <div class="row"><button class="btn" id="btnCopyCode">複製成績碼</button><span class="muted" id="copyMsg"></span></div>
+  </div>
+  ${rec.by==="teacher" ? `<div class="row"><button class="btn primary" id="btnNextStu">評下一位學生</button><a class="btn" href="#teacher" style="text-decoration:none">到教師管理查看</a></div>`
+    : `<div class="row"><button class="btn primary" id="btnAgain">再練一次</button><button class="btn" id="btnHist2">查看我的紀錄</button></div>`}`;
+  if(rec.by==="teacher"){ $("#btnNextStu").addEventListener("click",()=>{ cur=null; $("#gSid").value=""; $("#gName").value=""; show("grade"); window.scrollTo(0,0); $("#gSid").focus(); }); return; }
+  $("#btnCopyCode").addEventListener("click",async()=>{ try{ await navigator.clipboard.writeText(code); $("#copyMsg").textContent="已複製"; }catch(e){ $("#copyMsg").textContent="無法自動複製，請長按上方文字手動複製"; } });
+  $("#btnAgain").addEventListener("click",()=>{ cur=null; startAssess(); });
+  $("#btnHist2").addEventListener("click",showHistory);
+}
+
+/* ---------- student history ---------- */
+async function showHistory(){
+  show("history");
+  $("#vHistory").innerHTML = `<div class="card"><p class="muted" style="margin:0">讀取紀錄中…</p></div>`;
+  let list = ls.get("cn12.history",[]).filter(r=>r.sid===profile.sid);
+  await capReady;
+  if(DB && UID){
+    try{ const snap = await DB.doc("subs/"+UID).get(); if(snap.exists){ (snap.data().attempts||[]).forEach(a=>{ if(a.sid===profile.sid && !list.some(x=>x.id===a.id)) list.push(a); }); } }catch(e){}
+  }
+  list.sort((a,b)=>b.te-a.te);
+  const rows = list.map(r=>{ const c=compute(r); return `<tr class="click" data-hist="${esc(r.id)}"><td class="num">${fmtDT(r.te)}</td><td>${esc(r.m)}</td><td class="r">${c.total}</td><td class="r">${c.ded?"−"+c.ded:"0"}</td><td class="r">${fmtDur(c.dur)}</td></tr>`; }).join("");
+  const scores = list.slice().reverse().map(r=>compute(r).total);
+  $("#vHistory").innerHTML = `
+    <div class="row" style="justify-content:space-between"><h1 style="font-size:22px">我的練習紀錄・${esc(profile.sid)} ${esc(profile.nm||"")}</h1><button class="btn" id="hBack">返回</button></div>
+    ${list.length? `<div class="tiles">
+      <div class="tile"><div class="k">練習次數</div><div class="v">${list.length}</div></div>
+      <div class="tile"><div class="k">最高分</div><div class="v">${Math.max(...scores)}</div></div>
+      <div class="tile"><div class="k">最近一次</div><div class="v">${scores[scores.length-1]}</div></div>
+    </div>
+    <div class="tbl-wrap"><table><thead><tr><th>完成時間</th><th>方式</th><th class="r">總分</th><th class="r">倒扣</th><th class="r">用時</th></tr></thead><tbody>${rows}</tbody></table></div>
+    <p class="muted" style="font-size:13px;margin:0">點選任一筆可查看詳細結果與成績碼。紀錄保存在此瀏覽器${DB&&UID?"及教師端":""}。</p>`
+    : `<div class="card empty">目前沒有學號 ${esc(profile.sid)} 的紀錄。</div>`}`;
+  $("#hBack").addEventListener("click",()=>show("entry"));
+  document.querySelectorAll("[data-hist]").forEach(tr=>tr.addEventListener("click",()=>{ const r=list.find(x=>x.id===tr.dataset.hist); if(r){ renderResult(r, "history"); show("result"); const st=$("#vResult .pill"); if(st) st.outerHTML=`<span class="pill acc">歷史紀錄</span>`; window.scrollTo(0,0);} }));
+}
+
+/* ================= TEACHER ================= */
+let subsDocs = [], importDocs = [], gradedDocs = [], gradedUnsub = null;
+let tTab = "students", subsUnsub=null, impUnsub=null, tLoaded=false, tTimer=null;
+let expanded = new Set();
+
+function allRecords(){
+  const map = new Map();
+  subsDocs.forEach(d=>{ (d.data.attempts||[]).forEach(a=>{ if(a && Array.isArray(a.s) && a.s.length===N) map.set(a.id,{...a,src:"線上",_doc:"subs/"+d.id}); }); });
+  importDocs.forEach(d=>{ const a=d.data; if(a && Array.isArray(a.s) && !map.has(a.id)) map.set(a.id,{...a,src:"成績碼",_doc:"imports/"+d.id}); });
+
+  gradedDocs.forEach(d=>{ const a=d.data; if(a && Array.isArray(a.s) && a.s.length===N) map.set(a.id,{...a,by:"teacher",src:"教師評分",_doc:"graded/"+d.id}); });
+  syncQueue.forEach(q=>{ const a=q.rec; if(q.kind==="attempt"||map.has(a.id)) return; map.set(a.id, q.kind==="graded" ? {...a,by:"teacher",src:"教師評分（待同步）",_q:true} : {...a,src:"成績碼（待同步）",_q:true}); });
+  return [...map.values()].map(r=>({...r, sid:String(r.sid||"").toUpperCase(), c:compute(r)}));
+}
+function filtered(){
+  const g=$("#fGrade").value, q=$("#fSid").value.trim().toUpperCase(), m=$("#fMode").value;
+  const from=$("#fFrom").value? new Date($("#fFrom").value+"T00:00:00").getTime():null;
+  const to=$("#fTo").value? new Date($("#fTo").value+"T23:59:59").getTime():null;
+  const src=$("#fSrc").value;
+  return allRecords().filter(r=>(!g||r.g===g)&&(!q||r.sid.includes(q)||(r.nm||"").toUpperCase().includes(q))&&(!m||r.m===m)&&(!src||(src==="teacher")===(r.by==="teacher"))&&(from===null||r.te>=from)&&(to===null||r.te<=to)).sort((a,b)=>b.te-a.te);
+}
+const passLine = ()=>{ const v=Number($("#fPass").value); return isNaN(v)?80:v; };
+["#fGrade","#fSid","#fFrom","#fTo","#fMode","#fSrc","#fPass"].forEach(s=>$(s).addEventListener("input",()=>{ if(s==="#fPass") ls.set("cn12.pass",$("#fPass").value); renderTeacher(); }));
+$("#fPass").value = ls.get("cn12.pass",80);
+$("#tabs").addEventListener("click",e=>{ const b=e.target.closest("[data-tab]"); if(!b) return; tTab=b.dataset.tab; document.querySelectorAll("#tabs button").forEach(x=>x.setAttribute("aria-selected",String(x===b))); renderTeacher(); });
+
+function startTeacherData(){
+  if(subsUnsub || !DB || !CAN_EDIT) return;
+  tTimer = setTimeout(()=>{ if(!tLoaded){ showTNotice("資料庫暫時無法連線，顯示的資料可能不完整。"); } },10000);
+  subsUnsub = DB.collection("subs").onSnapshot(snap=>{
+    subsDocs = snap.docs.filter(d=>d.exists).map(d=>({id:d.id,data:d.data()}));
+    if(!snap.metadata.fromCache){ tLoaded=true; clearTimeout(tTimer); hideTNoticeIfTimeout(); }
+    renderTeacher();
+  }, err=>{ clearTimeout(tTimer); showTNotice("無法讀取線上紀錄（"+esc(err.code)+"）。"); });
+  gradedUnsub = DB.collection("graded").onSnapshot(snap=>{
+    gradedDocs = snap.docs.filter(d=>d.exists).map(d=>({id:d.id,data:d.data()}));
+    renderTeacher();
+  }, err=>{});
+  impUnsub = DB.collection("imports").onSnapshot(snap=>{
+    importDocs = snap.docs.filter(d=>d.exists).map(d=>({id:d.id,data:d.data()}));
+    renderTeacher();
+  }, err=>{});
+}
+let tNoticeKind="";
+function showTNotice(msg){ const n=$("#tNotice"); n.innerHTML=msg; n.classList.remove("hidden"); tNoticeKind="timeout"; }
+function hideTNoticeIfTimeout(){ if(tNoticeKind==="timeout"){ $("#tNotice").classList.add("hidden"); tNoticeKind=""; } }
+
+function renderTeacher(){
+  if(currentView!=="teacher") return;
+  const recs = filtered(); const pl = passLine();
+  // tiles
+  const students = new Map(); recs.forEach(r=>{ if(!students.has(r.sid)) students.set(r.sid,[]); students.get(r.sid).push(r); });
+  const avg = recs.length? recs.reduce((a,r)=>a+r.c.total,0)/recs.length : 0;
+  const bestPass = [...students.values()].filter(l=>Math.max(...l.map(r=>r.c.total))>=pl).length;
+  const avgDur = recs.filter(r=>r.c.dur>0); const ad = avgDur.length? avgDur.reduce((a,r)=>a+r.c.dur,0)/avgDur.length:0;
+  $("#tiles").innerHTML = `
+    <div class="tile"><div class="k">學生數</div><div class="v">${students.size}<small> 人</small></div></div>
+    <div class="tile"><div class="k">紀錄筆數</div><div class="v">${recs.length}<small> 筆</small></div></div>
+    <div class="tile"><div class="k">平均分數</div><div class="v">${recs.length?avg.toFixed(1):"—"}</div></div>
+    <div class="tile"><div class="k">最高分達 ${pl} 分</div><div class="v">${students.size?Math.round(bestPass/students.size*100):"—"}<small>${students.size?" %（"+bestPass+" 人）":""}</small></div></div>
+    <div class="tile"><div class="k">平均用時</div><div class="v">${ad?fmtDur(ad):"—"}</div></div>`;
+  const body = $("#tabBody");
+  if(tTab==="import"){ body.innerHTML = importHTML(); bindImport(); return; }
+  if(!recs.length){ body.innerHTML = `<div class="card empty">${allRecords().length?"沒有符合篩選條件的紀錄。":"尚無學生紀錄。學生送出評估後會顯示在這裡；未連線的學生可繳交成績碼，到「匯入成績碼」分頁貼上。"}</div>`; return; }
+  if(tTab==="students"){
+    const rows = [...students.entries()].map(([sid,l])=>{ l.sort((a,b)=>b.te-a.te); const sc=l.map(r=>r.c.total); return {sid,nm:(l.find(x=>x.nm)||{}).nm||"",g:l[0].g,n:l.length,best:Math.max(...sc),last:sc[0],avg:sc.reduce((a,b)=>a+b,0)/sc.length,lastT:l[0].te,l}; }).sort((a,b)=>a.sid.localeCompare(b.sid));
+    body.innerHTML = `<div class="tbl-wrap"><table><thead><tr><th>學號</th><th>姓名</th><th>年級</th><th class="r">次數</th><th class="r">最高分</th><th class="r">最近分數</th><th class="r">平均</th><th>最近練習</th><th>狀態</th></tr></thead><tbody>
+      ${rows.map(r=>`<tr class="click" data-exp="${esc(r.sid)}"><td><b>${esc(r.sid)}</b> <span class="muted">${expanded.has(r.sid)?"▾":"▸"}</span></td><td>${esc(r.nm)}</td><td>${esc(r.g)}</td><td class="r">${r.n}</td><td class="r">${r.best}</td><td class="r">${r.last}</td><td class="r">${r.avg.toFixed(1)}</td><td class="num">${fmtDT(r.lastT)}</td><td>${r.best>=pl?`<span class="pill ok">✓ 達標</span>`:`<span class="pill bad">✗ 未達標</span>`}</td></tr>
+        ${expanded.has(r.sid)? r.l.map(a=>`<tr class="sub click" data-det="${esc(a.id)}"><td></td><td></td><td colspan="2">${esc(a.m)}${a.pe?"（"+esc(a.pe)+"）":""}</td><td class="r">${a.c.total}</td><td class="r">倒扣 ${a.c.ded}</td><td class="r">${fmtDur(a.c.dur)}</td><td class="num">${fmtDT(a.te)}</td><td class="muted">${esc(a.src)}・詳細 ›</td></tr>`).join("") : ""}`).join("")}
+      </tbody></table></div>`;
+    body.querySelectorAll("[data-exp]").forEach(tr=>tr.addEventListener("click",()=>{ const s=tr.dataset.exp; expanded.has(s)?expanded.delete(s):expanded.add(s); renderTeacher(); }));
+    body.querySelectorAll("[data-det]").forEach(tr=>tr.addEventListener("click",()=>openDetail(tr.dataset.det)));
+  }
+  if(tTab==="records"){
+    body.innerHTML = `<div class="tbl-wrap"><table><thead><tr><th>完成時間</th><th>學號</th><th>姓名</th><th>年級</th><th>方式</th><th class="r">項目分</th><th class="r">倒扣</th><th class="r">總分</th><th class="r">用時</th>${SECTIONS.slice(1).map(s=>`<th class="r">${esc(s.cn)}</th>`).join("")}<th>來源</th><th></th></tr></thead><tbody>
+      ${recs.map(r=>`<tr class="click" data-det="${esc(r.id)}"><td class="num">${fmtDT(r.te)}</td><td><b>${esc(r.sid)}</b></td><td>${esc(r.nm||"")}</td><td>${esc(r.g)}</td><td>${esc(r.m)}</td><td class="r">${r.c.raw}</td><td class="r">${r.c.ded?"−"+r.c.ded:0}</td><td class="r"><b>${r.c.total}</b> ${r.c.total>=pl?"":`<span class="pill bad">未達</span>`}</td><td class="r">${fmtDur(r.c.dur)}</td>${SECTIONS.slice(1).map(s=>`<td class="r">${r.c.secs[s.id]}/${s.max}</td>`).join("")}<td class="muted">${esc(r.src)}</td><td><button class="btn small danger" data-del="${esc(r.id)}">刪除</button></td></tr>`).join("")}
+      </tbody></table></div>`;
+    body.querySelectorAll("[data-det]").forEach(tr=>tr.addEventListener("click",e=>{ if(e.target.closest("[data-del]")) return; openDetail(tr.dataset.det); }));
+    body.querySelectorAll("[data-del]").forEach(b=>b.addEventListener("click",e=>{ e.stopPropagation(); askDelete(b.dataset.del); }));
+  }
+  if(tTab==="items"){
+    const secStats = SECTIONS.map(sec=>({sec, pct: recs.reduce((a,r)=>a+r.c.secs[sec.id],0)/(recs.length*sec.max)*100}));
+    const itemStats = ITEMS.map((it,i)=>{ const sum=recs.reduce((a,r)=>a+r.c.s[i],0); const full=recs.filter(r=>r.c.s[i]===it.p).length; return {it,i,avg:sum/recs.length,pct:sum/(recs.length*it.p)*100,full:full/recs.length*100}; });
+    const worst = itemStats.filter(x=>x.pct<100).sort((a,b)=>a.pct-b.pct).slice(0,10);
+    const bins=[["0–59",0,59],["60–69",60,69],["70–79",70,79],["80–89",80,89],["90–100",90,100]];
+    const cnt = bins.map(b=>recs.filter(r=>r.c.total>=b[1]&&r.c.total<=b[2]).length); const mx=Math.max(1,...cnt);
+    const dedStats = DEDUCTIONS.map((d,i)=>({d,n:recs.filter(r=>(r.d||[]).includes(i)).length})).filter(x=>x.n).sort((a,b)=>b.n-a.n);
+    body.innerHTML = `
+    <div class="card stack"><h3 style="font-size:16px">各腦神經平均得分率</h3>
+      <div class="bars">${secStats.map(x=>`<div class="bar-row" data-tipr="${esc(x.sec.name)}：平均得分率 ${x.pct.toFixed(1)}%"><span>${esc(x.sec.cn==="準備"?"準備":x.sec.cn)} ${esc(x.sec.id==="prep"?"":x.sec.name.split("：")[0])}</span><div class="tr"><div class="fl" style="width:${x.pct}%"></div></div><span class="num" style="text-align:right">${x.pct.toFixed(0)}%</span></div>`).join("")}</div></div>
+    <div class="card stack"><h3 style="font-size:16px">總分分布（${recs.length} 筆）</h3>
+      <div class="hist">${cnt.map((c,i)=>`<div class="col" data-tipr="${bins[i][0]} 分：${c} 筆"><span class="c">${c}</span><div class="b" style="height:${c/mx*80}%"></div></div>`).join("")}</div>
+      <div class="hist-x">${bins.map(b=>`<span>${b[0]}</span>`).join("")}</div></div>
+    <div class="card stack"><h3 style="font-size:16px">最常失分的 10 個項目</h3>
+      ${worst.length?'':'<p class="muted" style="margin:0">篩選範圍內所有項目皆為滿分。</p>'}<div class="tbl-wrap ${worst.length?'':'hidden'}"><table><thead><tr><th>腦神經</th><th>項目</th><th class="r">配分</th><th class="r">平均得分</th><th class="r">得分率</th><th class="r">全對比例</th></tr></thead><tbody>
+      ${worst.map(w=>`<tr><td>${esc(w.it.secObj.cn)}</td><td style="white-space:normal;min-width:260px">${esc(w.it.t)}</td><td class="r">${w.it.p}</td><td class="r">${w.avg.toFixed(2)}</td><td class="r">${w.pct.toFixed(0)}%</td><td class="r">${w.full.toFixed(0)}%</td></tr>`).join("")}
+      </tbody></table></div></div>
+    <div class="card stack"><h3 style="font-size:16px">倒扣項目發生次數</h3>
+      ${dedStats.length? `<div class="bars">${dedStats.map(x=>`<div class="bar-row"><span style="white-space:normal">${esc(x.d.t)}</span><div class="tr"><div class="fl" style="width:${x.n/recs.length*100}%;background:var(--bad)"></div></div><span class="num" style="text-align:right">${x.n} 次</span></div>`).join("")}</div>` : `<p class="muted" style="margin:0">篩選範圍內沒有倒扣紀錄。</p>`}</div>`;
+  }
+}
+
+/* detail overlay */
+function openDetail(id){
+  const r = allRecords().find(x=>x.id===id); if(!r) return;
+  const f=r.f||{};
+  const finds = SECTIONS.slice(1).map(s=>{ const v=f["res_"+s.id]; const n=f["note_"+s.id]; return v||n? `<div><b>${esc(s.cn)} ${esc(s.name)}</b>：${v?`<span class="pill ${v==="正常"?"ok":"bad"}">${esc(v)}</span>`:""} ${esc(n||"")}</div>`:""; }).join("");
+  const extra = [f.pupilL||f.pupilR? `瞳孔：左 ${esc(f.pupilL||"—")} mm／右 ${esc(f.pupilR||"—")} mm`:"", f.weber?`Weber：${esc(f.weber)}`:"", (f.LBC||f.LAC||f.RBC||f.RAC)?`Rinne：左 BC ${esc(f.LBC||"—")}s / AC ${esc(f.LAC||"—")}s；右 BC ${esc(f.RBC||"—")}s / AC ${esc(f.RAC||"—")}s`:""].filter(Boolean).join("<br>");
+  $("#overlay").innerHTML = `<div class="card stack">
+    <div class="row" style="justify-content:space-between"><h2 style="font-size:19px">${esc(r.sid)} ${esc(r.nm||"")}・${r.c.total} 分</h2><button class="btn" id="ovClose">關閉</button></div>
+    <div class="muted num">${esc(r.g)}・${esc(r.m)}${r.pe?"（評分："+esc(r.pe)+"）":""}・${fmtDT(r.ts)} 開始・用時 ${fmtDur(r.c.dur)}・項目 ${r.c.raw} 倒扣 −${r.c.ded}・${esc(r.src)}</div>
+    ${finds||extra? `<div class="stack" style="gap:4px"><h3 style="font-size:15px">評估發現</h3>${extra?`<div>${extra}</div>`:""}${finds}</div>`:""}
+    ${r.n?`<div><b>學生備註：</b>${esc(r.n)}</div>`:""}
+    ${r.d&&r.d.length?`<div><b>倒扣：</b>${r.d.map(i=>DEDUCTIONS[i]?esc(DEDUCTIONS[i].t)+"（−"+DEDUCTIONS[i].p+"）":"").join("、")}</div>`:""}
+    <h3 style="font-size:15px">逐項得分</h3>
+    <div>${SECTIONS.map(s=>`<div class="subhead">${esc(s.cn)} ${esc(s.name)}　<span class="num">${r.c.secs[s.id]}/${s.max}</span></div>${ITEMS.slice(s.start,s.end).map((it,k)=>{ const v=r.c.s[s.start+k]; return `<div class="detail-item ${v<it.p?"lost":""}"><span>${esc(it.t)}</span><span class="num" style="text-align:right">${v}/${it.p}</span></div>`; }).join("")}`).join("")}</div>
+  </div>`;
+  $("#overlay").classList.remove("hidden");
+  $("#ovClose").addEventListener("click",closeOverlay); $("#ovClose").focus();
+}
+function closeOverlay(){ $("#overlay").classList.add("hidden"); $("#overlay").innerHTML=""; }
+$("#overlay").addEventListener("click",e=>{ if(e.target.id==="overlay") closeOverlay(); });
+document.addEventListener("keydown",e=>{ if(e.key==="Escape" && !$("#overlay").classList.contains("hidden")) closeOverlay(); });
+
+function askDelete(id){
+  const r = allRecords().find(x=>x.id===id); if(!r) return;
+  $("#overlay").innerHTML = `<div class="card stack" style="max-width:420px"><h2 style="font-size:18px">刪除這筆紀錄？</h2>
+    <p style="margin:0">${esc(r.sid)} ${esc(r.nm||"")}・${fmtDT(r.te)}・${r.c.total} 分。刪除後無法復原。</p><div class="err" id="delErr"></div>
+    <div class="row"><button class="btn danger" id="delYes">刪除</button><button class="btn" id="delNo">取消</button></div></div>`;
+  $("#overlay").classList.remove("hidden");
+  $("#delNo").addEventListener("click",closeOverlay);
+  $("#delYes").addEventListener("click",async()=>{
+    try{
+      if(r._q){ syncQueue = syncQueue.filter(q=>q.rec.id!==id); ls.set("cn12.queue",syncQueue); paintSync(); }
+      else if(r._doc.startsWith("graded/")){ await DB.doc(r._doc).delete(); }
+      else if(r._doc.startsWith("imports/")){ await DB.doc(r._doc).delete(); }
+      else { const ref=DB.doc(r._doc); const snap=await ref.get(); if(snap.exists){ const d=snap.data(); await ref.set({...d, attempts:(d.attempts||[]).filter(a=>a.id!==id)}); } }
+      closeOverlay(); renderTeacher();
+    }catch(e){ $("#delErr").textContent="刪除失敗："+(e&&e.code||"請稍後再試"); }
+  });
+}
+
+/* import */
+function importHTML(){
+  return `<div class="card stack">
+    <h3 style="font-size:16px">匯入學生成績碼</h3>
+    <p class="muted" style="margin:0;font-size:13px">每行貼上一組以 <code>CN12.</code> 開頭的成績碼，可一次貼多組。系統會重新計算分數、略過重複的紀錄。${DB&&CAN_EDIT?"匯入後存入雲端資料庫，下次開啟仍在。":"目前未連線資料庫，匯入的資料會暫存在此瀏覽器，連線後自動同步到雲端。"}</p>
+    <textarea class="t" id="impText" style="min-height:160px;font-family:ui-monospace,monospace;font-size:12px" placeholder="CN12.eyJ2Ijoi...."></textarea>
+    <div class="row"><button class="btn primary" id="impGo">匯入</button><span id="impMsg" class="muted"></span></div>
+    <div id="impErr" class="err" style="white-space:pre-line"></div></div>`;
+}
+function bindImport(){
+  $("#impGo").addEventListener("click",async()=>{
+    const lines = $("#impText").value.split(/\s+/).map(s=>s.trim()).filter(Boolean);
+    if(!lines.length){ $("#impMsg").textContent="請先貼上成績碼。"; return; }
+    const existing = new Set(allRecords().map(r=>r.id));
+    let ok=0, dup=0; const errs=[]; const toSave=[];
+    lines.forEach((l,i)=>{ try{ const r=decodeCode(l); if(existing.has(r.id)){dup++; return;} existing.add(r.id); toSave.push(r); }catch(e){ errs.push(`第 ${i+1} 組：${e.message}`); } });
+    $("#impGo").disabled=true; $("#impMsg").textContent="匯入中…";
+    for(const r of toSave){
+      if(DB && CAN_EDIT){ try{ await DB.doc("imports/"+r.id).set(r); ok++; }catch(e){ errs.push(`${r.sid}：暫存待同步（${e&&e.code||"錯誤"}）`); enqueue("import",r); } }
+      else { enqueue("import",r); ok++; }
+    }
+    $("#impGo").disabled=false;
+    $("#impMsg").textContent = `完成：新增 ${ok} 筆${dup?`，重複略過 ${dup} 筆`:""}${errs.length?`，${errs.length} 組有問題`:""}。`;
+    $("#impErr").textContent = errs.join("\n");
+    if(ok) $("#impText").value="";
+    const keep=tTab; renderTeacher(); if(keep==="import"){ $("#impMsg") && ($("#impMsg").textContent = `完成：新增 ${ok} 筆${dup?`，重複略過 ${dup} 筆`:""}${errs.length?`，${errs.length} 組有問題`:""}。`); $("#impErr") && ($("#impErr").textContent = errs.join("\n")); }
+  });
+}
+
+/* export */
+function recordRows(recs){
+  const head = ["學號","姓名","年級","評分方式","評分者","開始時間","完成時間","用時(分)","項目得分","倒扣","總分","是否達標","來源",
+    ...SECTIONS.map(s=>`${s.cn==="準備"?"準備":s.cn} ${s.name.split("：")[0]}(${s.max})`),
+    "倒扣項目","瞳孔左mm","瞳孔右mm","Weber","左BC秒","左AC秒","右BC秒","右AC秒",
+    ...SECTIONS.slice(1).map(s=>`${s.cn}結果`), ...SECTIONS.slice(1).map(s=>`${s.cn}說明`), "學生備註",
+    ...ITEMS.map(it=>`${it.label}(${it.p})`)];
+  const pl=passLine();
+  const rows = recs.map(r=>{ const f=r.f||{}; return [r.sid,r.nm||"",r.g,r.m,r.pe||"",fmtDT(r.ts),fmtDT(r.te),+(r.c.dur/60).toFixed(1),r.c.raw,r.c.ded,r.c.total,r.c.total>=pl?"是":"否",r.src,
+    ...SECTIONS.map(s=>r.c.secs[s.id]),
+    (r.d||[]).map(i=>DEDUCTIONS[i]?DEDUCTIONS[i].t:"").join("；"), f.pupilL||"",f.pupilR||"",f.weber||"",f.LBC||"",f.LAC||"",f.RBC||"",f.RAC||"",
+    ...SECTIONS.slice(1).map(s=>f["res_"+s.id]||""), ...SECTIONS.slice(1).map(s=>f["note_"+s.id]||""), r.n||"",
+    ...r.c.s]; });
+  return [head,...rows];
+}
+function studentRows(recs){
+  const pl=passLine(); const m=new Map(); recs.forEach(r=>{ if(!m.has(r.sid)) m.set(r.sid,[]); m.get(r.sid).push(r); });
+  const rows=[...m.entries()].sort((a,b)=>a[0].localeCompare(b[0])).map(([sid,l])=>{ l.sort((a,b)=>b.te-a.te); const sc=l.map(r=>r.c.total); return [sid,(l.find(x=>x.nm)||{}).nm||"",l[0].g,l.length,Math.max(...sc),Math.min(...sc),+(sc.reduce((a,b)=>a+b,0)/sc.length).toFixed(1),sc[0],fmtDT(l[0].te),Math.max(...sc)>=pl?"是":"否"]; });
+  return [["學號","姓名","年級","練習次數","最高分","最低分","平均分","最近一次分數","最近練習時間",`最高分達${pl}分`],...rows];
+}
+function itemRows(recs){
+  return [["編號","腦神經","子項目","評分標準","配分","平均得分","得分率(%)","全對比例(%)"], ...ITEMS.map((it,i)=>{ const sum=recs.reduce((a,r)=>a+r.c.s[i],0); const full=recs.filter(r=>r.c.s[i]===it.p).length; return [it.label,`${it.secObj.cn} ${it.secObj.name}`,it.s||"",it.t,it.p,+(sum/recs.length).toFixed(2),+(sum/(recs.length*it.p)*100).toFixed(1),+(full/recs.length*100).toFixed(1)]; })];
+}
+const stamp = ()=>{ const d=new Date(); const p=n=>String(n).padStart(2,"0"); return `${d.getFullYear()}${p(d.getMonth()+1)}${p(d.getDate())}`; };
+async function saveFile(filename, data){
+  await capReady;
+  if(!DOWNLOADS){ $("#expMsg").textContent="此檢視無法下載檔案，請改用「複製表格」貼到 Excel。"; return; }
+  try{ await DOWNLOADS.save({filename, data}); $("#expMsg").textContent=""; }
+  catch(e){ $("#expMsg").textContent = e&&e.code==="declined" ? "" : "下載未完成（"+(e&&e.code||"錯誤")+"），可改用「複製表格」。"; }
+}
+$("#btnXlsx").addEventListener("click",()=>{
+  const recs=filtered(); if(!recs.length){ $("#expMsg").textContent="沒有可匯出的紀錄。"; return; }
+  if(!window.XLSX){ $("#expMsg").textContent="Excel 元件未載入，請改用 CSV。"; return; }
+  const wb=XLSX.utils.book_new();
+  const ws1=XLSX.utils.aoa_to_sheet(studentRows(recs)); ws1["!cols"]=[{wch:12},{wch:8},{wch:8},{wch:8},{wch:8},{wch:8},{wch:12},{wch:18},{wch:12}];
+  const ws2=XLSX.utils.aoa_to_sheet(recordRows(recs)); ws2["!freeze"]={xSplit:1,ySplit:1};
+  const ws3=XLSX.utils.aoa_to_sheet(itemRows(recs)); ws3["!cols"]=[{wch:9},{wch:22},{wch:12},{wch:60},{wch:6},{wch:9},{wch:10},{wch:11}];
+  XLSX.utils.book_append_sheet(wb,ws1,"學生總表"); XLSX.utils.book_append_sheet(wb,ws2,"每次紀錄"); XLSX.utils.book_append_sheet(wb,ws3,"項目分析");
+  const buf = XLSX.write(wb,{type:"array",bookType:"xlsx"});
+  saveFile(`十二對腦神經評估紀錄_${stamp()}.xlsx`, new Blob([buf]));
+});
+$("#btnCsv").addEventListener("click",()=>{
+  const recs=filtered(); if(!recs.length){ $("#expMsg").textContent="沒有可匯出的紀錄。"; return; }
+  const csv = "﻿"+recordRows(recs).map(r=>r.map(v=>{ v=String(v??""); return /[",\n]/.test(v)?`"${v.replace(/"/g,'""')}"`:v; }).join(",")).join("\r\n");
+  saveFile(`十二對腦神經評估紀錄_${stamp()}.csv`, csv);
+});
+$("#btnCopy").addEventListener("click",async()=>{
+  const recs=filtered(); if(!recs.length){ $("#expMsg").textContent="沒有可複製的紀錄。"; return; }
+  const tsv = recordRows(recs).map(r=>r.map(v=>String(v??"").replace(/[\t\n]/g," ")).join("\t")).join("\n");
+  try{ await navigator.clipboard.writeText(tsv); $("#expMsg").textContent=`已複製 ${recs.length} 筆，可直接貼到 Excel 或 Google 試算表。`; }
+  catch(e){ $("#expMsg").textContent="瀏覽器不允許複製，請改用匯出。"; }
+});
+
+/* tooltip for bars */
+document.addEventListener("mousemove",e=>{
+  const t=e.target.closest("[data-tipr]"); const tip=$("#tip");
+  if(!t){ tip.classList.add("hidden"); return; }
+  tip.textContent=t.dataset.tipr; tip.classList.remove("hidden");
+  tip.style.left=Math.min(window.innerWidth-290,e.clientX+12)+"px"; tip.style.top=(e.clientY+14)+"px";
+});
+
+/* ================= home: nerves & tips ================= */
+const NERVES=[["I","嗅神經","sens","嗅覺"],["II","視神經","sens","視力、視野"],["III","動眼神經","motor","眼球運動、瞳孔收縮、提眼瞼"],["IV","滑車神經","motor","眼球向下內轉"],["V","三叉神經","mix","臉部感覺、咀嚼肌"],["VI","外旋神經","motor","眼球向外轉"],["VII","顏面神經","mix","表情肌、舌前 2/3 味覺"],["VIII","聽神經","sens","聽覺、平衡"],["IX","舌咽神經","mix","舌後 1/3 味覺、咽部感覺"],["X","迷走神經","mix","軟顎上提、嘔吐反射"],["XI","脊副神經","motor","斜方肌、胸鎖乳突肌"],["XII","舌下神經","motor","舌頭運動"]];
+const TYPE_NAME={sens:"感覺",motor:"運動",mix:"混合"};
+$("#nerveGrid").innerHTML = NERVES.map(n=>`<div class="nerve ${n[2]}" title="CN ${n[0]} ${n[1]}（${TYPE_NAME[n[2]]}）"><span class="rn">${n[0]}</span><span class="nm">${n[1]}</span><span class="fn">${n[3]}</span></div>`).join("");
+const TIPS=[];
+SECTIONS.forEach(sec=>{ if(sec.note) TIPS.push([sec.note, sec.cn+" "+sec.name]); sec.items.forEach(it=>{ if(it.n) TIPS.push([it.n, sec.cn+" "+(it.s||sec.name)]); }); });
+TIPS.push(["每項檢查都要一邊做一邊口述項目與結果，未說出者該項不得分。","評分注意事項"],["本表所列項目，未比較兩側不得分。","評分注意事項"],["測試每一條腦神經前，須先說出該條神經的名稱。","評分注意事項"],["檢查前後都要洗手，換個案時也要洗手，否則倒扣。","倒扣項目"],["頭髮不可觸及個案，過長請紮起；指甲不可過長。","倒扣項目"]);
+let tipI = Math.floor(Math.random()*TIPS.length);
+function showTip(){ $("#tipText").textContent=TIPS[tipI][0]; $("#tipSrc").textContent="—— "+TIPS[tipI][1]; }
+$("#btnTip").addEventListener("click",()=>{ tipI=(tipI+1+Math.floor(Math.random()*(TIPS.length-1)))%TIPS.length; showTip(); });
+showTip();
+
+/* ================= 雲端同步 ================= */
+let syncing=false;
+function markSynced(){ ls.set("cn12.lastSync",Date.now()); paintSync(); }
+function paintSync(state){
+  const chip=$("#syncChip"), t=$("#syncTxt"); if(!CAP_READY) return;
+  chip.classList.remove("hidden","ok","pending","busy","off");
+  const n=syncQueue.length, last=ls.get("cn12.lastSync",0);
+  if(state==="busy"){ chip.classList.add("busy"); t.textContent="同步中…"; chip.title="正在上傳到雲端"; return; }
+  if(!DB||!UID){ chip.classList.add(n?"pending":"off"); t.textContent = n?`本機暫存 ${n} 筆`:"離線模式"; chip.title="未連線雲端資料庫：資料存在此瀏覽器。用 claude.ai 帳號登入並開啟此頁後會自動同步。"; return; }
+  if(n){ chip.classList.add("pending"); t.textContent=`待同步 ${n} 筆`; chip.title="點一下立即同步"; return; }
+  chip.classList.add("ok"); t.textContent="已同步"; chip.title = "雲端同步正常" + (last?`，最後同步 ${fmtDT(last)}`:"") + "。點一下立即同步。";
+}
+async function syncNow(){
+  await capReady;
+  if(syncing || !DB || !UID){ paintSync(); return; }
+  syncing=true; paintSync("busy");
+  const rest=[];
+  for(const q of syncQueue){
+    let ok=false;
+    try{
+      if(q.kind==="attempt"){ ok = (await uploadRecord(q.rec))==="saved"; }
+      else if(CAN_EDIT){ await DB.doc((q.kind==="graded"?"graded/":"imports/")+q.rec.id).set(q.rec); ok=true; }
+    }catch(e){}
+    if(!ok) rest.push(q);
+  }
+  const changed = rest.length!==syncQueue.length;
+  syncQueue = rest; ls.set("cn12.queue",syncQueue);
+  if(!rest.length || changed) ls.set("cn12.lastSync",Date.now());
+  pushCloudDraft();
+  syncing=false; paintSync();
+  if(changed) renderTeacher();
+}
+$("#syncChip").addEventListener("click",syncNow);
+window.addEventListener("online",syncNow);
+setInterval(()=>{ if(syncQueue.length) syncNow(); },60000);
+
+/* ================= routing ================= */
+let currentView="entry";
+const VIEWS={entry:"#vEntry",assess:"#vAssess",result:"#vResult",history:"#vHistory",teacher:"#vTeacher",grade:"#vGrade"};
+const gPrefs = ls.get("cn12.gprefs",{});
+if(gPrefs.cat) $("#gCat").value=gPrefs.cat; if(gPrefs.teacher) $("#gTeacher").value=gPrefs.teacher; if(gPrefs.g) $("#gGrade").value=gPrefs.g;
+$("#gradeForm").addEventListener("submit",e=>{
+  e.preventDefault();
+  const sid=$("#gSid").value.trim().toUpperCase();
+  if(!/^[A-Z0-9]{6,12}$/.test(sid)){ $("#gErr").textContent="請輸入正確的學生學號（6–12 碼英文字母或數字）。"; $("#gSid").focus(); return; }
+  const nm=$("#gName").value.trim().slice(0,20);
+  if(!nm){ $("#gErr").textContent="請輸入學生姓名。"; $("#gName").focus(); return; }
+  $("#gErr").textContent="";
+  const teacher=$("#gTeacher").value.trim().slice(0,20);
+  ls.set("cn12.gprefs",{cat:$("#gCat").value,teacher,g:$("#gGrade").value});
+  profile = {g:$("#gGrade").value, sid, nm, m:$("#gCat").value, pe:teacher};
+  gradeMode = true; cur=null; startAssess();
+});
+function gradeGate(){
+  const n=$("#gNotice");
+  if(!CAP_READY){ n.textContent="連線中…"; n.classList.remove("hidden"); return; }
+  if(USER && !CAN_EDIT){ n.textContent="教師評分僅限此頁面的擁有者或編輯者使用。學生請回到「學生練習」。"; n.classList.remove("hidden"); $("#gCard").classList.add("hidden"); if(currentView!=="grade") show("grade"); return; }
+  $("#gCard").classList.remove("hidden");
+  if(!DB){ n.textContent="目前未連線資料庫：評分會暫存在此瀏覽器，請記得到教師管理匯出。"; n.classList.remove("hidden"); } else n.classList.add("hidden");
+}
+function show(v){
+  currentView=v;
+  Object.entries(VIEWS).forEach(([k,s])=>$(s).classList.toggle("hidden",k!==v));
+  $("#scorebar").classList.toggle("hidden",v!=="assess");
+  const isD = v==="grade"||gradeMode&&(v==="assess"||v==="result");
+  $("#navStudent").setAttribute("aria-current", v==="teacher"||isD?"false":"page");
+  $("#navGrade").setAttribute("aria-current", isD?"page":"false");
+  $("#navTeacher").setAttribute("aria-current", v==="teacher"?"page":"false");
+  if(v==="teacher") renderTeacher();
+}
+function route(){
+  if(location.hash==="#teacher"){ clearInterval(timerH); show("teacher"); teacherGate(); }
+  else if(location.hash==="#grade"){ if(!gradeMode || !["assess","result"].includes(currentView)){ clearInterval(timerH); cur=null; gradeMode=true; show("grade"); } gradeGate(); }
+  else if(gradeMode){ gradeMode=false; cur=null; clearInterval(timerH); show("entry"); }
+  else if(currentView==="teacher"||currentView==="grade"){ show(cur?"assess":"entry"); }
+}
+function teacherGate(){
+  if(!CAP_READY){ showTNotice("連線中…"); return; }
+  if(USER && !CAN_EDIT){
+    $("#tNotice").innerHTML="教師管理僅限此頁面的擁有者或編輯者使用。學生請回到「學生練習」。"; $("#tNotice").classList.remove("hidden"); tNoticeKind="gate";
+    $("#tabBody").innerHTML=""; $("#tiles").innerHTML=""; return;
+  }
+  if(!DB){ $("#tNotice").innerHTML="目前未連線資料庫（例如在預覽中或尚未登入），只能檢視本機暫存的教師評分與「匯入成績碼」的資料，請記得匯出。"; $("#tNotice").classList.remove("hidden"); tNoticeKind="db"; }
+  else if(tNoticeKind==="gate"||tNoticeKind==="db"||$("#tNotice").textContent==="連線中…"){ $("#tNotice").classList.add("hidden"); tNoticeKind=""; }
+  startTeacherData(); renderTeacher();
+}
+function onCaps(){
+  paintSync(); if(syncQueue.length) syncNow(); else if(DB&&UID) markSynced();
+  $("#navTeacher").classList.toggle("hidden", !CAN_EDIT);
+  $("#navGrade").classList.toggle("hidden", !CAN_EDIT);
+  const cn=$("#connNote");
+  if(!DB || !UID){ cn.innerHTML="目前為離線模式：評估結果先存在此瀏覽器，用 claude.ai 帳號登入開啟後會自動同步到雲端；也可以送出後複製「成績碼」交給老師。"; cn.classList.remove("hidden"); }
+  if(location.hash==="#teacher") teacherGate();
+  if(location.hash==="#grade") gradeGate();
+}
+window.addEventListener("hashchange",route);
+show("entry"); route();
+</script>
+</body>
+</html>
